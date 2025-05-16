@@ -22,7 +22,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
-} from "@/components/ui/alert-dialog";
+} from "@/Components/ui/alert-dialog";
 import { CalendarDays, Clock, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
