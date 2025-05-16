@@ -24,20 +24,20 @@ const Event = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const eventRes = await axios.get(`http://localhost:8092/User/getEventById/${eventId}`, {
+        const eventRes = await axios.get(`https://bookingapp-backend-hsy3.onrender.com/User/getEventById/${eventId}`, {
           withCredentials: true,
         });
         const eventData = eventRes.data;
         setEvent(eventData);
 
         const venueId = eventData.venueId.venueId;
-        const venueRes = await axios.get(`http://localhost:8092/User/getVenueById/${venueId}`, {
+        const venueRes = await axios.get(`https://bookingapp-backend-hsy3.onrender.com/User/getVenueById/${venueId}`, {
           withCredentials: true,
         });
         const venueData = venueRes.data.venue || venueRes.data;
         setVenue(venueData);
 
-        const seatRes = await axios.get(`http://localhost:8092/User/getSeatStatusByEventId/${eventId}`, {
+        const seatRes = await axios.get(`https://bookingapp-backend-hsy3.onrender.com/User/getSeatStatusByEventId/${eventId}`, {
           withCredentials: true,
         });
         setSeatStatusList(seatRes.data);

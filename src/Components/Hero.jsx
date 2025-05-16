@@ -32,7 +32,7 @@ const Hero = () => {
             const fetchEvents = async () => {
                 try {
                     const response = await axios.get(
-                        `http://localhost:8092/User/getAllEvents`,
+                        `https://bookingapp-backend-hsy3.onrender.com/User/getAllEvents`,
                         { withCredentials: true }
                     );
                     console.log("Fetched events:", response.data);

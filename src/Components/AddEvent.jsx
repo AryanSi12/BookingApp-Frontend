@@ -64,7 +64,7 @@ const AddEvent = () => {
       formData.append("image", eventImage);
 
       const response = await axios.post(
-        `http://localhost:8092/Organizer/createEvent/${venueId}`,
+        `https://bookingapp-backend-hsy3.onrender.com/Organizer/createEvent/${venueId}`,
         formData,
         {
           headers: {

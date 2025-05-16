@@ -15,7 +15,7 @@ const MyBookings = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const res = await axios.get("http://localhost:8092/User/fetchBookingByUserId", {
+        const res = await axios.get("https://bookingapp-backend-hsy3.onrender.com/User/fetchBookingByUserId", {
           withCredentials: true,
         });
         setBookings(res.data);

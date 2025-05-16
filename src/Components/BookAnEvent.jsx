@@ -16,7 +16,7 @@ const BookAnEvent = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await axios.get("http://localhost:8092/User/getAllEvents", {
+        const res = await axios.get("https://bookingapp-backend-hsy3.onrender.com/User/getAllEvents", {
           withCredentials: true,
         });
         console.log(res.data);

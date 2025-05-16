@@ -24,7 +24,7 @@ const Navbar = () => {
 
     const validateToken = async () => {
       try {
-        const response = await axios.get('http://localhost:8092/User/getCurrUser', {
+        const response = await axios.get('https://bookingapp-backend-hsy3.onrender.com/User/getCurrUser', {
           withCredentials: true,
         });
         if (response) {
@@ -42,7 +42,7 @@ const Navbar = () => {
 
     const fetchUserDetails = async () => {
       try {
-        const response = await axios.get("http://localhost:8092/User/getUserDetails", { withCredentials: true });
+        const response = await axios.get("https://bookingapp-backend-hsy3.onrender.com/User/getUserDetails", { withCredentials: true });
         console.log("User details fetched:", response.data);
         dispatch(
           setUserDetails({
@@ -72,7 +72,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      const response = await axios.post("http://localhost:8092/User/Logout", null, { withCredentials: true });
+      const response = await axios.post("https://bookingapp-backend-hsy3.onrender.com/User/Logout", null, { withCredentials: true });
       console.log("Logout successful:", response);
 
       dispatch(clearUserDetails());

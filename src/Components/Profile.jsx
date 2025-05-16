@@ -42,7 +42,7 @@ export default function ProfilePage() {
     try {
       setLoading(true);
       const response = await axios.put(
-        "http://localhost:8092/User/updateUserDetails",
+        "https://bookingapp-backend-hsy3.onrender.com/User/updateUserDetails",
         {
           username,
           password,

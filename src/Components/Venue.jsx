@@ -23,7 +23,7 @@ const Venue = () => {
   useEffect(() => {
     const fetchVenue = async () => {
       try {
-        const response = await axios.get(`http://localhost:8092/User/getVenueById/${venueId}`, {
+        const response = await axios.get(`https://bookingapp-backend-hsy3.onrender.com/User/getVenueById/${venueId}`, {
           withCredentials: true,
         });
         console.log(response.data);

@@ -51,7 +51,7 @@ const SignupAsOrganizer = () => {
       form.append("image", formData.image);
 
       //send request to server
-      const response = await axios.post("http://localhost:8092/Public/AddOrganizer", form, {
+      const response = await axios.post("https://bookingapp-backend-hsy3.onrender.com/Public/AddOrganizer", form, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -64,7 +64,7 @@ const SignupAsOrganizer = () => {
       });
       //login the user after signup
       const res = await axios.post(
-        "http://localhost:8092/Public/LoginUser",
+        "https://bookingapp-backend-hsy3.onrender.com/Public/LoginUser",
         {
           username: formData.username,
           password: formData.password

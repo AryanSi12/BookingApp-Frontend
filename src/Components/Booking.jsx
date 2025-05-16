@@ -42,7 +42,7 @@ const Booking = () => {
 
     try {
       const res = await axios.post(
-        `http://localhost:8092/User/bookSeat/${eventId}`,
+        `https://bookingapp-backend-hsy3.onrender.com/User/bookSeat/${eventId}`,
         { bookedSeats },
         { withCredentials: true }
       );

@@ -17,12 +17,12 @@ const EventAnalytics = () => {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const eventRes = await axios.get(`http://localhost:8092/User/getEventById/${eventId}`, {
+        const eventRes = await axios.get(`https://bookingapp-backend-hsy3.onrender.com/User/getEventById/${eventId}`, {
           withCredentials: true,
         });
         setEvent(eventRes.data);
 
-        const seatRes = await axios.get(`http://localhost:8092/User/getSeatStatusByEventId/${eventId}`, {
+        const seatRes = await axios.get(`https://bookingapp-backend-hsy3.onrender.com/User/getSeatStatusByEventId/${eventId}`, {
           withCredentials: true,
         });
         setSeatStatusList(seatRes.data);

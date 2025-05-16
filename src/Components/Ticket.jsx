@@ -15,7 +15,7 @@ const Ticket = () => {
     const fetchTicket = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:8092/User/fetchBookingByBookingId/${bookingId}`,
+          `https://bookingapp-backend-hsy3.onrender.com/User/fetchBookingByBookingId/${bookingId}`,
           { withCredentials: true }
         );
         setTicket(res.data);

@@ -36,7 +36,7 @@ const MyVenues = () => {
     const fetchVenues = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8092/Organizer/getAllVenuesByUserId",
+          "https://bookingapp-backend-hsy3.onrender.com/Organizer/getAllVenuesByUserId",
           { withCredentials: true }
         );
         setVenues(response.data);
@@ -54,7 +54,7 @@ const MyVenues = () => {
   const handleDelete = async (venueId) => {
     try {
       await axios.delete(
-        `http://localhost:8092/Organizer/deleteVenueById/${venueId}`,
+        `https://bookingapp-backend-hsy3.onrender.com/Organizer/deleteVenueById/${venueId}`,
         { withCredentials: true }
       );
       setVenues((prev) => prev.filter((v) => v.venueId !== venueId));
