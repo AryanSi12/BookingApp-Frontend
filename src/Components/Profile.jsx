@@ -1,9 +1,9 @@
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent } from "@/Components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/Components/ui/avatar";
+import { Badge } from "@/Components/ui/badge";
+import { Separator } from "@/Components/ui/separator";
 import {
   Dialog,
   DialogTrigger,
@@ -12,10 +12,10 @@ import {
   DialogTitle,
   DialogFooter,
   DialogClose,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "@/Components/ui/dialog";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
 import { toast } from "sonner";
 import axios from "axios";
 

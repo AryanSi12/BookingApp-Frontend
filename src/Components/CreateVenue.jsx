@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/Components/ui/input";
+import { Button } from "@/Components/ui/button";
+import { Label } from "@/Components/ui/label";
+import { Card, CardContent } from "@/Components/ui/card";
+import { Textarea } from "@/Components/ui/textarea";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";

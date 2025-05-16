@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Skeleton } from "@/Components/ui/skeleton";
 import { toast } from "sonner";
 import { Link } from "react-router-dom"; // <-- React Router Link
 

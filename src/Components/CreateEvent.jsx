@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button"; // Button from ShadCN for consistency
-import { Skeleton } from "@/components/ui/skeleton"; // Loading state with skeleton
+//import { Button } from "@/Components/ui/button"; // Button from ShadCN for consistency
+import { Skeleton } from "@/Components/ui/skeleton"; // Loading state with skeleton
 
 const CreateEvent = () => {
   const [venues, setVenues] = useState([]);

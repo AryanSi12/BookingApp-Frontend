@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
 import { toast } from "sonner";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/Components/ui/skeleton";
 
 const categoryColors = {
   VIP: "bg-yellow-400",

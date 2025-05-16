@@ -8,7 +8,7 @@ import {
   CardCvcElement
 } from "@stripe/react-stripe-js";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import { toast } from "sonner";
 
 const elementStyle = {

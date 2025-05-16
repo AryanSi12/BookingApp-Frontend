@@ -10,8 +10,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+} from '@/Components/ui/dropdown-menu';
+import { Avatar, AvatarImage, AvatarFallback } from '@/Components/ui/avatar';
 
 const Navbar = () => {
   const dispatch = useDispatch();

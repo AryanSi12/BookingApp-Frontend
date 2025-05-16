@@ -6,12 +6,12 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@/Components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/Components/ui/avatar";
+import { Badge } from "@/Components/ui/badge";
+import { Button } from "@/Components/ui/button";
+import { ScrollArea } from "@/Components/ui/scroll-area";
+import { Skeleton } from "@/Components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogTrigger,
