@@ -8,10 +8,10 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+} from "@/Components/ui/card";
+import { Skeleton } from "@/Components/ui/skeleton";
+import { Badge } from "@/Components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/Components/ui/avatar";
 import { useSelector } from "react-redux";
 import { TicketCheck, UserCircle } from "lucide-react";
 
