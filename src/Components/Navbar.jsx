@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
@@ -20,13 +20,15 @@ const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    console.log(userDetails);
-
     const validateToken = async () => {
       try {
+        console.log("Validating token...");
+        
         const response = await axios.get('https://bookingapp-backend-hsy3.onrender.com/User/getCurrUser', {
           withCredentials: true,
         });
+        console.log("Token validation response:", response.data);
+        
         if (response) {
         } else {
           dispatch(clearUserDetails());
@@ -39,6 +41,10 @@ const Navbar = () => {
     if (isLoggedIn) {
       validateToken();
     }
+  }, []);
+
+  useEffect(() => {
+    console.log(userDetails);
 
     const fetchUserDetails = async () => {
       try {
