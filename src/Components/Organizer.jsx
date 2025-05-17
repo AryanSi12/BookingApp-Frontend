@@ -120,7 +120,7 @@ const Organizer = () => {
             className="hover:shadow-lg hover:scale-[1.02] transition cursor-pointer overflow-hidden"
           >
             <img
-              src="public\My Events.jpg"
+              src="/My Events.jpg"
               alt="Events"
               className="h-56 w-full object-cover"
             />
@@ -139,7 +139,7 @@ const Organizer = () => {
             className="hover:shadow-lg hover:scale-[1.02] transition cursor-pointer overflow-hidden"
           >
             <img
-              src="public\My venues.jpg"
+              src="/My venues.jpg"
               alt="Venues"
               className="h-56 w-full object-cover"
             />

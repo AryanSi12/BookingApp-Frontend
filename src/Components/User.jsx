@@ -121,7 +121,7 @@ const User = () => {
     className="hover:shadow-lg hover:scale-[1.02] transition cursor-pointer overflow-hidden"
   >
     <img
-      src="public\\Screenshot 2025-05-16 013424.png"
+      src="/Screenshot 2025-05-16 013424.png"
       alt="My Bookings"
       className="h-56 w-full object-cover"
     />
