@@ -89,7 +89,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="w-full ml-0 md:ml-44 absolute top-0 left-0 z-20 bg-transparent px-4 md:px-6 py-4 md:py-5 flex justify-between items-center max-w-7xl mx-auto">
+    <nav className="w-full ml-0 md:ml-36 absolute top-0 left-0 z-20 bg-transparent px-4 md:px-6 py-4 md:py-5 flex justify-between items-center max-w-7xl mx-auto">
 
       <div className="text-2xl font-bold text-white">EventSphere</div>
 
