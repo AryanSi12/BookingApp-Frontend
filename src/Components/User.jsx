@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -33,10 +32,10 @@ const User = () => {
   }, [userDetails, navigate]);
 
   return (
-    <div className="mt-24 px-4 md:px-10 max-w-7xl mx-auto">
-      <Card className="border border-slate-700 bg-slate-800 p-6 md:p-10 shadow-lg space-y-10">
+    <div className="page-shell pb-16 pt-24 md:pt-28">
+      <div className="surface-card space-y-10 p-6 md:p-10">
         {/* User Info */}
-        <section className="space-y-6 text-white">
+        <section className="space-y-6 text-ink">
           <div className="flex items-center gap-6 flex-wrap md:flex-nowrap">
             {loading ? (
               <Skeleton className="h-20 w-20 rounded-full" />
@@ -70,7 +69,7 @@ const User = () => {
               </>
             ) : (
               user?.roles?.map((role) => (
-                <Badge key={role} variant="outline" className="text-sm text-white">
+                <Badge key={role} variant="outline" className="rounded-lg border-brand/20 bg-brand-soft text-sm text-brand">
                   {role}
                 </Badge>
               ))
@@ -82,14 +81,14 @@ const User = () => {
             {loading ? (
               <Skeleton className="h-24 w-full" />
             ) : (
-              <Card className="mt-5 bg-muted/20 p-3 border border-slate-700">
+              <Card className="mt-5 border border-[color:var(--border)] bg-[#faf7f3] p-3">
                 <CardHeader className="flex items-center gap-2">
-                  <UserCircle className="text-muted-foreground" />
-                  <CardTitle className="text-xl text-white">
+                  <UserCircle className="text-brand" />
+                  <CardTitle className="font-display text-xl text-ink">
                     User Features
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2 text-base text-white">
+                <CardContent className="space-y-2 text-base text-slate-600">
                   <ul className="list-disc pl-6">
                     <li>Browse available events and venues.</li>
                     <li>Book seats in real-time and track your bookings.</li>
@@ -103,7 +102,7 @@ const User = () => {
         </section>
 
         {/* My Bookings */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 text-white">
+        <section className="grid grid-cols-1 gap-6 text-ink md:grid-cols-2">
          {loading ? (
   <Card className="overflow-hidden">
     <Skeleton className="h-56 w-full rounded-none" />
@@ -129,14 +128,14 @@ const User = () => {
       <TicketCheck className="text-green-600" />
       <CardTitle>My Bookings</CardTitle>
     </CardHeader>
-    <CardContent className="text-slate-400">
+    <CardContent className="text-slate-500">
       View all your booked events and seat details in one place.
     </CardContent>
   </Card>
 )}
 
         </section>
-      </Card>
+      </div>
     </div>
   );
 };

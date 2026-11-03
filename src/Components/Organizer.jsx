@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -42,10 +41,10 @@ const Organizer = () => {
   }, [userDetails, navigate]);
 
   return (
-    <div className="mt-24 px-4 md:px-10 max-w-7xl mx-auto ">
-      <Card className=" border border-slate-700 bg-slate-800 p-6 md:p-10 shadow-lg space-y-10">
+    <div className="page-shell pb-16 pt-24 md:pt-28">
+      <div className="surface-card space-y-10 p-6 md:p-10">
         {/* Organizer Info */}
-        <section className="space-y-6 text-white">
+        <section className="space-y-6 text-ink">
           <div className="flex items-center gap-6 flex-wrap md:flex-nowrap">
             {loading ? (
               <Skeleton className="h-20 w-20 rounded-full" />
@@ -79,7 +78,7 @@ const Organizer = () => {
               </>
             ) : (
               user?.roles?.map((role) => (
-                <Badge key={role} variant="outline" className="text-sm text-white">
+                <Badge key={role} variant="outline" className="rounded-lg border-brand/20 bg-brand-soft text-sm text-brand">
                   {role}
                 </Badge>
               ))
@@ -91,14 +90,14 @@ const Organizer = () => {
             {loading ? (
               <Skeleton className="h-24 w-full" />
             ) : (
-              <Card className="mt-5 bg-muted/20 p-3 border border-slate-700">
+              <Card className="mt-5 border border-[color:var(--border)] bg-[#faf7f3] p-3">
                 <CardHeader className="flex items-center gap-2">
-                  <UserCog className="text-muted-foreground" />
-                  <CardTitle className="text-xl text-white">
+                  <UserCog className="text-brand" />
+                  <CardTitle className="font-display text-xl text-ink">
                     Organizer Authorities
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2 text-base text-white">
+                <CardContent className="space-y-2 text-base text-slate-600">
                   <ul className="list-disc pl-6">
                     <li>Create, edit, and manage events.</li>
                     <li>View and control venue listings.</li>
@@ -113,7 +112,7 @@ const Organizer = () => {
         </section>
 
         {/* My Events & My Venues */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 text-white">
+        <section className="grid grid-cols-1 gap-6 text-ink md:grid-cols-2">
           {/* My Events Card */}
           <Card
             onClick={() => navigate("/my-events")}
@@ -128,7 +127,7 @@ const Organizer = () => {
               <CalendarCheck className="text-cyan-600" />
               <CardTitle>My Events</CardTitle>
             </CardHeader>
-            <CardContent className="text-slate-400">
+            <CardContent className="text-slate-500">
               View, manage, and track your upcoming and past events.
             </CardContent>
           </Card>
@@ -147,12 +146,12 @@ const Organizer = () => {
               <Building className="text-indigo-600" />
               <CardTitle>My Venues</CardTitle>
             </CardHeader>
-            <CardContent className="text-slate-400">
+            <CardContent className="text-slate-500">
               Manage your listed venues and check seat availability.
             </CardContent>
           </Card>
         </section>
-      </Card>
+      </div>
     </div>
   );
 };

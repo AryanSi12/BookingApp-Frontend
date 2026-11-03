@@ -1,336 +1,174 @@
-import React, { use, useEffect, useRef } from "react";
-import {
-    CalendarCheck,
-    MapPin,
-    PlusSquare,
-    Users,
-    ChevronLeft,
-    ChevronRight,
-} from "lucide-react";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/Components/ui/card";
+import React, { useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, MapPin, PlusSquare, Ticket } from "lucide-react";
 import { Button } from "@/Components/ui/button";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { toast } from "sonner";
-
+import EventPosterCard from "@/Components/EventPosterCard";
+import { EmptyState, Surface } from "@/Components/ui/PageShell";
 
 const Hero = () => {
-    const { userDetails, isLoggedIn } = useSelector((state) => state.user);
-    const [events, setEvents] = React.useState([]);
-    useEffect(() => {
+  const { userDetails, isLoggedIn } = useSelector((state) => state.user);
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const scrollContainerRef = useRef(null);
+  const isOrganizer = isLoggedIn && userDetails?.roles?.includes("ORGANIZER");
 
-        console.log(userDetails?.roles);
-
-        if (isLoggedIn) {
-            const fetchEvents = async () => {
-                try {
-                    const response = await axios.get(
-                        `https://bookingapp-backend-hsy3.onrender.com/User/getAllEvents`,
-                        { withCredentials: true }
-                    );
-                    console.log("Fetched events:", response.data);
-                    setEvents(response.data);
-                }
-                catch (error) {
-                    console.error("Error fetching events:", error);
-                }
-            }
-            fetchEvents();
-        }
-    }, [isLoggedIn]);
-    const scrollContainerRef = useRef(null);
-
-    const scrollLeft = () => {
-        scrollContainerRef.current?.scrollBy({ left: -300, behavior: "smooth" });
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get(
+          "https://bookingapp-backend-hsy3.onrender.com/User/getAllEvents",
+          { withCredentials: true }
+        );
+        setEvents(Array.isArray(response.data) ? response.data : []);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      } finally {
+        setLoading(false);
+      }
     };
+    fetchEvents();
+  }, []);
 
-    const scrollRight = () => {
-        scrollContainerRef.current?.scrollBy({ left: 300, behavior: "smooth" });
-    };
+  const scrollByCards = (direction) => {
+    scrollContainerRef.current?.scrollBy({ left: direction * 320, behavior: "smooth" });
+  };
 
-    return (
-        <section className="relative bg-gradient-to-br from-[#0f172a] to-[#1e293b] min-h-screen text-white overflow-hidden">
-            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[900px] h-[900px] bg-cyan-400 opacity-10 rounded-full blur-3xl pointer-events-none" />
-
-            <div className="relative z-10 mt-6 max-w-7xl mx-auto px-6 pt-32 text-center">
-                <h1 className="text-5xl md:text-6xl font-extrabold leading-tight tracking-tight mb-6">
-                    EventSphere: Where Events Come Alive
-                </h1>
-                <p className="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto mb-14">
-                    Discover, host, and manage world-class events. Whether you're an attendee or organizer,
-                    EventSphere gives you the tools to create unforgettable experiences.
-                </p>
-
-                {/* Feature Cards */}
-                <div className="mt-28 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-                    {/* Explore Events */}
-                    <Link
-                        to={isLoggedIn ? "/book-events" : "#"}
-                        onClick={(e) => {
-                            if (!isLoggedIn) {
-                                e.preventDefault();
-                                toast.error("Please login to explore events.");
-                            }
-                        }}
-                        className="cursor-pointer"
-                    >
-                        <Card className="bg-white text-gray-900 rounded-2xl shadow-xl hover:shadow-2xl transition transform hover:-translate-y-1">
-                            <img
-                                src="/ChatGPT Image May 13, 2025, 12_29_44 AM.png"
-                                alt="Explore Events"
-                                className="w-full object-cover max-h-80"
-                            />
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-purple-700 text-xl font-bold">
-                                    <CalendarCheck size={20} /> Explore Events
-                                </CardTitle>
-                                <CardDescription className="text-gray-700 mt-1">
-                                    Find and book events that match your vibe.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <span className="text-purple-700 font-medium">Go to Events →</span>
-                            </CardContent>
-                        </Card>
-                    </Link>
-
-
-                    {/* Create Event */}
-                    <Link
-                        to={isLoggedIn && userDetails?.roles?.includes("ORGANIZER") ? "/create-event" : "#"}
-                        onClick={(e) => {
-                            if (!isLoggedIn) {
-                                e.preventDefault();
-                                toast.error("Please login to create events.");
-                            } else if (!userDetails?.roles?.includes("ORGANIZER")) {
-                                e.preventDefault();
-                                toast.error("Only organizers can create events.");
-                            }
-                        }}
-                        className="cursor-pointer"
-                    >
-                        <Card className="bg-white text-gray-900 rounded-2xl shadow-xl hover:shadow-2xl transition transform hover:-translate-y-1">
-                            <img src="/ChatGPT Image May 12, 2025, 11_58_07 PM.png" alt="Create Event" className="w-full object-cover max-h-80" />
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-green-700 text-xl font-bold">
-                                    <PlusSquare size={20} /> Create Event
-                                </CardTitle>
-                                <CardDescription className="text-gray-700 mt-1">
-                                    Design your event, sell tickets, and manage attendees with ease.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <span className="text-green-700 font-medium">Create Event →</span>
-                            </CardContent>
-                        </Card>
-                    </Link>
-
-
-                    {/* Create Venue */}
-                    <Link
-                        to={isLoggedIn && userDetails?.roles?.includes("ORGANIZER") ? "/create-venue" : "#"}
-                        onClick={(e) => {
-                            if (!isLoggedIn) {
-                                e.preventDefault();
-                                toast.error("Please login to create venues.");
-                            } else if (!userDetails?.roles?.includes("ORGANIZER")) {
-                                e.preventDefault();
-                                toast.error("Only organizers can create venues.");
-                            }
-                        }}
-                        className="cursor-pointer"
-                    >
-                        <Card className="bg-white text-gray-900 rounded-2xl shadow-xl hover:shadow-2xl transition transform hover:-translate-y-1">
-                            <img src="/Screenshot 2025-05-13 142900.png" alt="Create Venue" className="w-full object-cover max-h-80" />
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-indigo-700 text-xl font-bold">
-                                    <MapPin size={20} /> Create Venue
-                                </CardTitle>
-                                <CardDescription className="text-gray-700 mt-1">
-                                    Set up your venue once and reuse it for all your future events.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <span className="text-indigo-700 font-medium">Create Venue →</span>
-                            </CardContent>
-                        </Card>
-                    </Link>
-
-                </div>
-
-                {/* Why EventSphere */}
-                <div className="mt-24 max-w-4xl mx-auto text-center">
-                    <h2 className="text-3xl font-bold mb-4">Why EventSphere?</h2>
-                    <p className="text-slate-300 mb-6">
-                        Our platform brings event organizers and attendees together through a seamless, secure,
-                        and intuitive booking experience.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-6 justify-center">
-
-                        {/* For Attendees */}
-                        <Link to="/explore" className="w-full sm:w-1/3">
-                            <div className="bg-slate-800 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
-                                <Users className="text-cyan-400 mb-2" size={28} />
-                                <h3 className="font-semibold text-lg mb-1">For Attendees</h3>
-                                <p className="text-sm text-slate-400">
-                                    Easily explore and reserve spots at your favorite events.
-                                </p>
-                            </div>
-                        </Link>
-
-                        {/* For Organizers */}
-                        <Link to="/organizer" className="w-full sm:w-1/3">
-                            <div className="bg-slate-800 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
-                                <PlusSquare className="text-green-400 mb-2" size={28} />
-                                <h3 className="font-semibold text-lg mb-1">For Organizers</h3>
-                                <p className="text-sm text-slate-400">
-                                    Create events, track bookings, and manage payments effortlessly.
-                                </p>
-                            </div>
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Trending Events */}
-                <div className="mt-32 relative">
-                    <h2 className="text-3xl font-bold mb-10 text-center">Upcoming Events</h2>
-
-                    {/* Scroll Buttons */}
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-slate-800/60 hover:bg-slate-700/80 backdrop-blur-md border border-slate-700 text-white"
-                        onClick={scrollLeft}
-                    >
-                        <ChevronLeft size={36} />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-slate-800/60 hover:bg-slate-700/80 backdrop-blur-md border border-slate-700 text-white"
-                        onClick={scrollRight}
-                    >
-                        <ChevronRight size={36} />
-                    </Button>
-
-                    {/* Scrollable Row with Hidden Scrollbar */}
-                    <div
-                        ref={scrollContainerRef}
-                        className="flex gap-4 sm:gap-6 px-2 sm:px-4 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory"
-                        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-                    >
-
-                        <style jsx>{`
-              div::-webkit-scrollbar {
-                display: none;
-              }
-            `}</style>
-
-                        {events.map((event, index) => {
-                            const start = new Date(...event.startTime);
-                            const end = new Date(...event.endTime);
-                            const now = new Date();
-
-                            const formattedDate = start.toLocaleDateString(undefined, {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                            });
-
-                            const formattedTime = `${start.toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                            })} - ${end.toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                            })}`;
-
-                            const isExpired = now > end;
-
-                            const truncateWords = (text, wordLimit) => {
-                                const words = text.split(" ");
-                                return words.length > wordLimit ? words.slice(0, wordLimit).join(" ") + "..." : text;
-                            };
-
-                            const truncatedTitle = truncateWords(event.title, 6);
-                            const truncatedDescription = truncateWords(event.aboutEvent, 12);
-                            const showDescription = event.aboutEvent.split(" ").length > 0;
-
-                            return (
-                                <Link
-                                    to={`/event/${event.eventId}`}
-                                    key={index}
-                                    className="snap-center shrink-0 w-[90%] sm:w-[300px] min-h-[60px] bg-gradient-to-br from-white via-slate-50 to-purple-100 text-gray-900 rounded-2xl shadow-lg hover:shadow-xl transition duration-300 flex flex-col"
-                                >
-
-                                    <img
-                                        src={event.eventImage}
-                                        alt={event.title}
-                                        className="w-full h-48 object-cover rounded-t-2xl"
-                                    />
-
-                                    <div className="flex flex-col justify-start px-4 py-3 gap-2 flex-1">
-                                        {/* Title & Status */}
-                                        <div className="text-sm font-semibold flex items-center justify-between">
-                                            <span className="max-w-[170px] whitespace-nowrap overflow-hidden text-ellipsis" title={event.title}>
-                                                {truncatedTitle}
-                                            </span>
-                                            <span
-                                                className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${isExpired ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"
-                                                    }`}
-                                            >
-                                                {isExpired ? "Expired ❌" : "Upcoming ✅"}
-                                            </span>
-                                        </div>
-
-                                        {/* Description */}
-                                        {showDescription && (
-                                            <div className="text-xs text-slate-600">
-                                                {truncatedDescription}
-                                            </div>
-                                        )}
-
-                                        {/* Metadata */}
-                                        <div className="mt-auto text-center text-[12px] text-slate-500 space-y-1 pt-2">
-                                            <div>{formattedDate} | {formattedTime}</div>
-                                            <div>📍 {event?.venueId?.venueLocation}</div>
-                                            <div>🎤 {event?.organizerId?.username}</div>
-                                        </div>
-                                    </div>
-                                </Link>
-
-                            );
-                        })}
-
-                    </div>
-                </div>
-
-                {/* Venues Section */}
-                <div className="mt-32 max-w-4xl mx-auto text-center">
-                    <h2 className="text-3xl font-bold mb-4">Popular Venues</h2>
-                    <p className="text-slate-300">
-                        Discover the most loved event venues by our community. Browse locations, capacity,
-                        amenities, and more.
-                    </p>
-                    <div className="mt-8 italic text-slate-400">
-                        Venue showcase coming soon...
-                    </div>
-                </div>
-
-                {/* Footer/Ending Hero Note */}
-                <div className="mt-32 py-16 border-t border-slate-700 text-slate-400 text-sm text-center">
-                    Made with ❤️ by the EventSphere Team — All rights reserved © 2025
-                </div>
+  return (
+    <div className="pb-20 pt-16">
+      <section className="relative overflow-hidden border-b border-[color:var(--border)]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(225,29,72,0.12),transparent_35%),radial-gradient(circle_at_85%_10%,rgba(17,24,39,0.06),transparent_30%),linear-gradient(135deg,#fffdfb,#f8f4ef_55%,#fff1f3)]" />
+        <div className="page-shell relative grid gap-10 py-12 md:grid-cols-[1.15fr_0.85fr] md:items-center md:py-16">
+          <div className="fade-up max-w-xl">
+            <p className="section-kicker">EventSphere</p>
+            <h1 className="mt-3 font-display text-4xl font-extrabold leading-[1.05] text-ink md:text-6xl">
+              Book the show.<br />Own the seat.
+            </h1>
+            <p className="mt-4 max-w-lg text-base leading-relaxed text-slate-600 md:text-lg">
+              A cleaner ticket marketplace for discovering events, choosing seats, and walking in with your booking ready.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link to={isLoggedIn ? "/book-events" : "/login"} className="brand-btn">
+                Book tickets
+              </Link>
+              <Link to="/get-all-events" className="ghost-btn">
+                Browse all events
+              </Link>
             </div>
+          </div>
+
+          <Surface className="fade-up-delay overflow-hidden p-5 md:p-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-soft text-brand">
+                <Ticket className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-display text-lg font-semibold text-ink">Tonight near you</p>
+                <p className="text-sm text-slate-500">Pick a poster, choose seats, pay in seconds.</p>
+              </div>
+            </div>
+            <div className="mt-5 grid grid-cols-3 gap-3">
+              {[
+                { label: "Live events", value: loading ? "…" : String(events.length) },
+                { label: "Seat map", value: "Live" },
+                { label: "Checkout", value: "Secure" },
+              ].map((item) => (
+                <div key={item.label} className="rounded-xl bg-[#faf7f3] px-3 py-4 text-center">
+                  <p className="font-display text-lg font-bold text-ink">{item.value}</p>
+                  <p className="mt-1 text-[11px] font-medium uppercase tracking-wide text-slate-500">{item.label}</p>
+                </div>
+              ))}
+            </div>
+          </Surface>
+        </div>
+      </section>
+
+      <section className="page-shell py-12 md:py-14">
+        <div className="mb-6 flex items-end justify-between gap-4">
+          <div>
+            <p className="section-kicker">Recommended</p>
+            <h2 className="mt-2 font-display text-2xl font-bold text-ink md:text-3xl">Events worth booking</h2>
+          </div>
+          <Link to="/get-all-events" className="text-sm font-semibold text-brand hover:underline">
+            See all
+          </Link>
+        </div>
+
+        {loading ? (
+          <div className="no-scrollbar flex gap-4 overflow-hidden">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="h-[22rem] w-44 shrink-0 animate-pulse rounded-2xl bg-white/70" />
+            ))}
+          </div>
+        ) : events.length === 0 ? (
+          <EmptyState
+            title="No events yet"
+            description="When organizers publish shows, they will appear here as posters ready to book."
+            action={<Link to="/get-all-events" className="brand-btn">Refresh listings</Link>}
+          />
+        ) : (
+          <div className="relative">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="absolute -left-3 top-[42%] z-10 hidden rounded-full border-[color:var(--border)] bg-white shadow-md md:inline-flex"
+              onClick={() => scrollByCards(-1)}
+              aria-label="Scroll events left"
+            >
+              <ChevronLeft />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="absolute -right-3 top-[42%] z-10 hidden rounded-full border-[color:var(--border)] bg-white shadow-md md:inline-flex"
+              onClick={() => scrollByCards(1)}
+              aria-label="Scroll events right"
+            >
+              <ChevronRight />
+            </Button>
+            <div
+              ref={scrollContainerRef}
+              className="no-scrollbar flex gap-4 overflow-x-auto scroll-smooth pb-2"
+            >
+              {events.map((event) => (
+                <EventPosterCard
+                  key={event.eventId}
+                  event={event}
+                  className="w-[46%] shrink-0 sm:w-44 md:w-52"
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+
+      {isOrganizer && (
+        <section className="page-shell grid gap-4 md:grid-cols-2">
+          <Link to="/create-event" className="surface-card flex items-center gap-4 p-5 transition hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(17,24,39,0.08)]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-soft text-brand">
+              <PlusSquare className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="font-display text-lg font-semibold text-ink">Create an event</p>
+              <p className="text-sm text-slate-500">List a show and start selling seats.</p>
+            </div>
+          </Link>
+          <Link to="/create-venue" className="surface-card flex items-center gap-4 p-5 transition hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(17,24,39,0.08)]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-soft text-brand">
+              <MapPin className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="font-display text-lg font-semibold text-ink">Add a venue</p>
+              <p className="text-sm text-slate-500">Set the hall layout once and reuse it.</p>
+            </div>
+          </Link>
         </section>
-    );
+      )}
+    </div>
+  );
 };
 
 export default Hero;

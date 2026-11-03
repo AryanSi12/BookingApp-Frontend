@@ -38,11 +38,11 @@ const EventAnalytics = () => {
   }, [eventId]);
 
   if (loading) {
-    return <div className="text-white text-center mt-16">Loading analytics...</div>;
+    return <div className="text-slate-700 text-center mt-24">Loading analytics...</div>;
   }
 
   if (!event || seatStatusList.length === 0) {
-    return <div className="text-white text-center mt-16">No analytics data found.</div>;
+    return <div className="text-slate-700 text-center mt-24">No analytics data found.</div>;
   }
 
   // Analytics Calculations
@@ -65,54 +65,54 @@ const EventAnalytics = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f172a] to-[#1e293b] text-white py-16 px-6">
-      <div className="max-w-6xl mt-12 mx-auto space-y-10">
+    <div className="page-shell pb-16 pt-24 md:pt-28">
+      <div className="mx-auto max-w-6xl space-y-8">
 
         {/* Event Info */}
-        <Card className="bg-slate-600 p-2 text-gray-900 shadow-xl rounded-xl">
+        <Card className="surface-card border-[color:var(--border)] p-2">
           <CardHeader>
-            <CardTitle className="text-xl font-bold text-center text-white">
-              {event.title} - Analytics
+            <CardTitle className="text-center font-display text-2xl font-bold text-ink">
+              {event.title} — Analytics
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-center text-white space-y-2">
-            <p><span className="font-semibold">Venue:</span> {event.venueId.venueName}</p>
-            <p><span className="font-semibold">Start:</span> {new Date(event.startTime).toLocaleString()}</p>
-            <p><span className="font-semibold">End:</span> {new Date(event.endTime).toLocaleString()}</p>
+          <CardContent className="space-y-2 text-center text-slate-600">
+            <p><span className="font-semibold text-ink">Venue:</span> {event.venueId.venueName}</p>
+            <p><span className="font-semibold text-ink">Start:</span> {new Date(event.startTime).toLocaleString()}</p>
+            <p><span className="font-semibold text-ink">End:</span> {new Date(event.endTime).toLocaleString()}</p>
           </CardContent>
         </Card>
 
         {/* Statistics */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="bg-green-600 text-white shadow-lg">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <Card className="border-0 bg-emerald-600 text-white shadow-sm">
             <CardContent className="p-4">
-              <p className="text-lg font-semibold">Total Seats</p>
-              <p className="text-3xl font-bold">{totalSeats}</p>
+              <p className="text-sm font-semibold uppercase tracking-wide text-white/80">Total Seats</p>
+              <p className="mt-1 font-display text-3xl font-bold">{totalSeats}</p>
             </CardContent>
           </Card>
-          <Card className="bg-blue-600 text-white shadow-lg">
+          <Card className="border-0 bg-sky-600 text-white shadow-sm">
             <CardContent className="p-4">
-              <p className="text-lg font-semibold">Booked Seats</p>
-              <p className="text-3xl font-bold">{bookedSeats.length}</p>
+              <p className="text-sm font-semibold uppercase tracking-wide text-white/80">Booked Seats</p>
+              <p className="mt-1 font-display text-3xl font-bold">{bookedSeats.length}</p>
             </CardContent>
           </Card>
-          <Card className="bg-yellow-500 text-white shadow-lg">
+          <Card className="border-0 bg-amber-500 text-white shadow-sm">
             <CardContent className="p-4">
-              <p className="text-lg font-semibold">Available Seats</p>
-              <p className="text-3xl font-bold">{availableSeats.length}</p>
+              <p className="text-sm font-semibold uppercase tracking-wide text-white/80">Available Seats</p>
+              <p className="mt-1 font-display text-3xl font-bold">{availableSeats.length}</p>
             </CardContent>
           </Card>
-          <Card className="bg-purple-700 text-white shadow-lg">
+          <Card className="border-0 bg-brand text-white shadow-sm">
             <CardContent className="p-4">
-              <p className="text-lg font-semibold">Total Revenue</p>
-              <p className="text-3xl font-bold">₹{totalRevenue}</p>
+              <p className="text-sm font-semibold uppercase tracking-wide text-white/80">Total Revenue</p>
+              <p className="mt-1 font-display text-3xl font-bold">₹{totalRevenue}</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Pie Chart */}
-        <div className="bg-white text-gray-900 p-6 rounded-xl shadow-xl">
-          <h2 className="text-xl font-bold text-center mb-4 text-indigo-700">Seat Booking Distribution</h2>
+        <div className="surface-card p-6">
+          <h2 className="mb-4 text-center font-display text-xl font-bold text-ink">Seat Booking Distribution</h2>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -134,8 +134,8 @@ const EventAnalytics = () => {
         </div>
 
         {/* Bar Chart */}
-        <div className="bg-white text-gray-900 p-6 rounded-xl shadow-xl">
-          <h2 className="text-xl font-bold text-center mb-4 text-indigo-700">Revenue by Seat Type</h2>
+        <div className="surface-card p-6">
+          <h2 className="mb-4 text-center font-display text-xl font-bold text-ink">Revenue by Seat Type</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={barData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -143,7 +143,7 @@ const EventAnalytics = () => {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="revenue" fill="#6366f1" name="Revenue (₹)" />
+              <Bar dataKey="revenue" fill="#e11d48" name="Revenue (₹)" />
             </BarChart>
           </ResponsiveContainer>
         </div>

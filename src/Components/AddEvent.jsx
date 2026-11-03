@@ -88,11 +88,12 @@ const AddEvent = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 px-4 py-12">
-      <Card className="mt-10 w-full max-w-2xl p-6 shadow-lg sm:p-8 rounded-lg">
+    <div className="page-shell flex justify-center pb-16 pt-24 md:pt-28">
+      <Card className="surface-card w-full max-w-2xl border-[color:var(--border)] p-6 sm:p-8">
         <CardContent>
-          <h2 className="text-2xl sm:text-3xl font-semibold mb-8 text-gray-800 text-center sm:text-left">
-            Create a New Event
+          <p className="section-kicker text-center sm:text-left">Organizer</p>
+          <h2 className="mb-8 mt-2 text-center font-display text-2xl font-bold text-ink sm:text-left sm:text-3xl">
+            Create a new event
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">

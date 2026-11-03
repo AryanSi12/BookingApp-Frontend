@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { toast } from "sonner";
-//import { Button } from "@/Components/ui/button"; // Button from ShadCN for consistency
-import { Skeleton } from "@/Components/ui/skeleton"; // Loading state with skeleton
+import { Skeleton } from "@/Components/ui/skeleton";
+import { EmptyState, PageHeader, PageShell, Surface } from "@/Components/ui/PageShell";
 
 const CreateEvent = () => {
   const [venues, setVenues] = useState([]);
@@ -17,72 +16,73 @@ const CreateEvent = () => {
         const response = await axios.get("https://bookingapp-backend-hsy3.onrender.com/User/getAllVenues", {
           withCredentials: true,
         });
-        console.log(response);
-        
         setVenues(response.data || []);
-        setLoading(false); // Set loading to false after data is fetched
       } catch (error) {
         console.error(error);
         toast.error("Failed to fetch venues");
-        setLoading(false); // Stop loading in case of error
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchVenues();
-  }, [navigate]);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white px-6 py-16">
-      <div className="max-w-7xl mx-auto space-y-10">
-        <h1 className="text-4xl font-bold text-center mt-10 mb-15 text-gray-100 ">
-          Select a Venue to Create Event
-        </h1>
+    <PageShell>
+      <PageHeader
+        kicker="Organizer"
+        title="Choose a venue"
+        subtitle="Pick a hall layout, then finish the event details."
+      />
 
-        {/* Loading state with Skeleton */}
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Skeleton className="h-80 w-full rounded-2xl" />
-            <Skeleton className="h-80 w-full rounded-2xl" />
-            <Skeleton className="h-80 w-full rounded-2xl" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {venues.map((venue) => {
-              const venueId = venue.venueId;
-              console.log(venueId);
-              
-              return (
-                <Card
-                  key={venueId}
-                  
-                  onClick={() => navigate(`/create-event-final/${venueId}`)}
-                  className="bg-white cursor-pointer rounded-2xl shadow-lg hover:shadow-2xl hover:scale-[1.02] transition transform"
-                >
+      {loading ? (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <Skeleton className="h-72 w-full rounded-2xl" />
+          <Skeleton className="h-72 w-full rounded-2xl" />
+          <Skeleton className="h-72 w-full rounded-2xl" />
+        </div>
+      ) : venues.length === 0 ? (
+        <EmptyState
+          title="No venues yet"
+          description="Create a venue first so you can attach a seat map to your event."
+          action={
+            <button type="button" className="brand-btn" onClick={() => navigate("/create-venue")}>
+              Create venue
+            </button>
+          }
+        />
+      ) : (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {venues.map((venue) => {
+            const venueId = venue.venueId;
+            return (
+              <button
+                key={venueId}
+                type="button"
+                onClick={() => navigate(`/create-event-final/${venueId}`)}
+                className="text-left"
+              >
+                <Surface className="overflow-hidden transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(17,24,39,0.08)]">
                   <img
                     src={venue.venueImage}
                     alt={venue.venueName}
-                    className="w-full h-48 object-cover rounded-t-2xl"
+                    className="h-48 w-full object-cover"
                   />
-                  <CardHeader>
-                    <CardTitle className="text-lg font-bold text-gray-800 text-center">
-                      {venue.venueName}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-center text-gray-600">
-                    <p>{venue.venueLocation}</p>
-                    <p className="text-sm mt-2">
-                      {venue.rows} Rows × {venue.col} Columns
+                  <div className="p-5">
+                    <h3 className="font-display text-lg font-bold text-ink">{venue.venueName}</h3>
+                    <p className="mt-1 text-sm text-slate-500">{venue.venueLocation}</p>
+                    <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                      {venue.rows} rows × {venue.col} seats
                     </p>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-
-        
-      </div>
-    </div>
+                  </div>
+                </Surface>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </PageShell>
   );
 };
 
