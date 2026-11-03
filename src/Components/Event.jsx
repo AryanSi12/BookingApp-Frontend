@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Button } from "@/Components/ui/button";
+import { CalendarDays, MapPin } from "lucide-react";
 import { toast } from "sonner";
-import { Skeleton } from "@/Components/ui/skeleton";
-
-const categoryColors = {
-  VIP: "bg-yellow-400",
-  REGULAR: "bg-blue-400",
-};
+import SeatMap from "@/Components/SeatMap";
+import { PageShell, Surface } from "@/Components/ui/PageShell";
+import { MAX_SEATS, formatEventTime, formatEventWhen, seatPrice } from "@/lib/utils";
 
 const Event = () => {
   const { eventId } = useParams();
@@ -30,17 +26,24 @@ const Event = () => {
         const eventData = eventRes.data;
         setEvent(eventData);
 
-        const venueId = eventData.venueId.venueId;
-        const venueRes = await axios.get(`https://bookingapp-backend-hsy3.onrender.com/User/getVenueById/${venueId}`, {
-          withCredentials: true,
-        });
-        const venueData = venueRes.data.venue || venueRes.data;
-        setVenue(venueData);
+        const venueRef = eventData.venueId;
+        const venueId = typeof venueRef === "object"
+          ? venueRef.venueId || venueRef._id || venueRef.id
+          : venueRef;
+
+        if (venueId) {
+          const venueRes = await axios.get(`https://bookingapp-backend-hsy3.onrender.com/User/getVenueById/${venueId}`, {
+            withCredentials: true,
+          });
+          setVenue(venueRes.data.venue || venueRes.data);
+        } else if (venueRef && typeof venueRef === "object") {
+          setVenue(venueRef);
+        }
 
         const seatRes = await axios.get(`https://bookingapp-backend-hsy3.onrender.com/User/getSeatStatusByEventId/${eventId}`, {
           withCredentials: true,
         });
-        setSeatStatusList(seatRes.data);
+        setSeatStatusList(Array.isArray(seatRes.data) ? seatRes.data : []);
       } catch (error) {
         toast.error("Error loading event data");
         console.error(error);
@@ -53,19 +56,21 @@ const Event = () => {
   }, [eventId]);
 
   const toggleSeatSelection = (seat) => {
-    if (seat.status !== "AVAILABLE") return;
+    if ((seat.status || "AVAILABLE") !== "AVAILABLE") return;
 
-    const isSelected = selectedSeats.find((s) => s.seatNumber === seat.seatNumber);
-    if (isSelected) {
-      setSelectedSeats(selectedSeats.filter((s) => s.seatNumber !== seat.seatNumber));
-    } else {
-      setSelectedSeats([...selectedSeats, seat]);
+    const alreadySelected = selectedSeats.some((item) => item.seatNumber === seat.seatNumber);
+    if (alreadySelected) {
+      setSelectedSeats(selectedSeats.filter((item) => item.seatNumber !== seat.seatNumber));
+      return;
     }
+    if (selectedSeats.length >= MAX_SEATS) {
+      toast.error(`You can select up to ${MAX_SEATS} seats.`);
+      return;
+    }
+    setSelectedSeats([...selectedSeats, seat]);
   };
 
-  const totalPrice = selectedSeats.reduce((sum, seat) => {
-    return seat.seatType === "VIP" ? sum + 100 : sum + 50;
-  }, 0);
+  const totalPrice = selectedSeats.reduce((sum, seat) => sum + seatPrice(seat.seatType), 0);
 
   const handleBook = () => {
     if (selectedSeats.length === 0) {
@@ -73,118 +78,111 @@ const Event = () => {
       return;
     }
 
-    const seatNumbers = selectedSeats.map((seat) => seat.seatNumber);
     navigate(`/booking/${eventId}`, {
       state: {
-        bookedSeats: seatNumbers,
+        bookedSeats: selectedSeats.map((seat) => seat.seatNumber),
+        selectedSeatDetails: selectedSeats,
+        totalPrice,
+        eventTitle: event.title,
+        eventImage: event.eventImage,
+        startTime: event.startTime,
+        venueName: venue?.venueName,
+        venueLocation: venue?.venueLocation,
       },
     });
   };
 
-  if (!event || !venue) return <div className="text-white text-center mt-16">Loading event...</div>;
+  if (!event || !venue) {
+    return <div className="px-4 pt-28 text-center text-slate-500">Loading event...</div>;
+  }
+
+  const showtime = formatEventTime(event.startTime);
 
   return (
-    <div className="min-h-screen mt-5 bg-gradient-to-br from-[#0f172a] to-[#1e293b] text-white py-20 px-6">
-      <div className="max-w-6xl mx-auto space-y-10">
-        {/* Event Card */}
-        <Card className="bg-white text-gray-900 rounded-2xl shadow-xl">
-          <img src={event.eventImage} alt={event.title} className="w-full h-80 object-cover rounded-t-2xl" />
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center text-indigo-700">
-              {event.title}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-center text-slate-700 space-y-2">
-            <p>{event.aboutEvent}</p>
-            <p><span className="font-semibold">Start:</span> {new Date(event.startTime).toLocaleString()}</p>
-            <p><span className="font-semibold">End:</span> {new Date(event.endTime).toLocaleString()}</p>
-            <p><span className="font-semibold">Venue:</span> {venue.venueName}, {venue.venueLocation}</p>
-          </CardContent>
-        </Card>
-
-        {/* Seat Layout */}
-        <div className="bg-white text-gray-900 p-6 rounded-2xl shadow-xl">
-          <h2 className="text-xl font-semibold mb-4 text-center text-purple-700">Seat Layout</h2>
-          <div className="text-center mb-6">
-            <div className="bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-t-lg w-fit mx-auto shadow-md">
-              SCREEN
-            </div>
-          </div>
-
-          <div
-            className="grid"
-            style={{
-              gridTemplateRows: `repeat(${venue.rows}, auto)`,
-              gridTemplateColumns: `repeat(${venue.col}, 1fr)`,
-              gap: "10px",
-            }}
-          >
-            {loadingSeats ? (
-              Array.from({ length: venue.rows * venue.col }).map((_, index) => (
-                <Skeleton key={index} className="h-10 rounded-lg" />
-              ))
-            ) : (
-              seatStatusList.map((seat) => {
-                const isSelected = selectedSeats.find((s) => s.seatNumber === seat.seatNumber);
-                let bgColor = "";
-
-                if (seat.status === "BOOKED") {
-                  bgColor = "bg-gray-500";
-                } else if (isSelected) {
-                  bgColor = "bg-green-500";
-                } else {
-                  bgColor = categoryColors[seat.seatType] || "bg-gray-400";
-                }
-
-                return (
-                  <div
-                    key={seat.seatStatusId}
-                    onClick={() => toggleSeatSelection(seat)}
-                    className={`h-10 flex items-center justify-center rounded-lg text-sm font-medium text-white 
-                      ${bgColor} 
-                      ${seat.status !== "AVAILABLE" ? "cursor-not-allowed" : "cursor-pointer"}`}
-                  >
-                    {seat.seatNumber}
-                  </div>
-                );
-              })
-            )}
-          </div>
-
-          {/* Legends */}
-          <div className="mt-6 flex justify-center gap-4 flex-wrap text-sm">
-            <div className="flex items-center gap-2">
-              <span className="w-4 h-4 rounded bg-yellow-400"></span> VIP (₹100)
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-4 h-4 rounded bg-blue-400"></span> REGULAR (₹50)
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-4 h-4 rounded bg-gray-500"></span> BOOKED
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-4 h-4 rounded bg-green-500"></span> SELECTED
-            </div>
-          </div>
+    <PageShell className="pb-36">
+      <Surface className="fade-up overflow-hidden md:grid md:grid-cols-[240px_1fr]">
+        <div className="relative min-h-56 bg-[#efeae4] md:min-h-full">
+          {event.eventImage ? (
+            <img src={event.eventImage} alt="" className="h-full max-h-80 w-full object-cover md:absolute md:inset-0 md:max-h-none" />
+          ) : (
+            <div className="flex h-56 items-center justify-center text-sm text-slate-400">No poster</div>
+          )}
         </div>
+        <div className="p-5 md:p-8">
+          <p className="section-kicker">Now booking</p>
+          <h1 className="mt-2 font-display text-3xl font-extrabold text-ink md:text-4xl">{event.title}</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base">
+            {event.aboutEvent || "Details for this event will be shared by the organizer."}
+          </p>
+          <div className="mt-5 flex flex-col gap-2 text-sm text-slate-600">
+            <p className="inline-flex items-start gap-2">
+              <MapPin className="mt-0.5 h-4 w-4 text-brand" />
+              <span>
+                <span className="font-semibold text-ink">{venue.venueName}</span>
+                {venue.venueLocation ? ` · ${venue.venueLocation}` : ""}
+              </span>
+            </p>
+            <p className="inline-flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-brand" />
+              {formatEventWhen(event.startTime)}
+            </p>
+          </div>
+          {showtime && (
+            <div className="mt-6">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Showtime</p>
+              <span className="inline-flex rounded-xl border border-brand/30 bg-brand-soft px-3.5 py-2 text-sm font-bold text-brand">
+                {showtime}
+              </span>
+            </div>
+          )}
+        </div>
+      </Surface>
 
-        {/* Booking Summary */}
-        <div className="text-center space-y-4">
-          <p className="text-lg">
-            Selected Seats: <span className="font-bold">{selectedSeats.map((s) => s.seatNumber).join(", ") || "None"}</span>
+      <section className="mt-8">
+        <div className="mb-4 flex items-end justify-between gap-3">
+          <div>
+            <p className="section-kicker">Hall</p>
+            <h2 className="mt-1 font-display text-2xl font-bold text-ink">Select your seats</h2>
+          </div>
+          <p className="text-xs font-medium text-slate-400">
+            {loadingSeats ? "Loading layout..." : `${seatStatusList.length} seats`}
           </p>
-          <p className="text-lg">
-            Total Price: <span className="font-bold">₹{totalPrice}</span>
-          </p>
-          <Button
-            className="bg-purple-700 text-white hover:bg-purple-800 px-6 py-2 rounded-lg text-md"
-            onClick={handleBook}
-          >
-            Book Tickets
-          </Button>
+        </div>
+        {loadingSeats ? (
+          <Surface className="px-6 py-16 text-center text-sm text-slate-500">
+            Loading seat layout...
+          </Surface>
+        ) : (
+          <SeatMap
+            seats={seatStatusList}
+            cols={venue.col}
+            selectedSeats={selectedSeats}
+            onToggle={toggleSeatSelection}
+            onReplace={setSelectedSeats}
+            interactive
+          />
+        )}
+      </section>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[color:var(--border)] bg-white/90 backdrop-blur-xl">
+        <div className="page-shell flex items-center justify-between gap-4 py-3.5">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+              {selectedSeats.length} {selectedSeats.length === 1 ? "ticket" : "tickets"}
+            </p>
+            <p className="truncate text-sm font-semibold text-ink">
+              {selectedSeats.map((seat) => seat.seatNumber).join(", ") || "No seats selected"}
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-4">
+            <p className="font-display text-xl font-bold text-ink">₹{totalPrice}</p>
+            <button type="button" onClick={handleBook} className="brand-btn">
+              Proceed
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 };
 

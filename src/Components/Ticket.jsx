@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Separator } from "@/Components/ui/separator";
-import { Button } from "@/Components/ui/button";
 import { toast } from "sonner";
+import { PageShell } from "@/Components/ui/PageShell";
+import { formatEventWhen } from "@/lib/utils";
 
 const Ticket = () => {
   const { bookingId } = useParams();
@@ -19,7 +18,7 @@ const Ticket = () => {
           { withCredentials: true }
         );
         setTicket(res.data);
-      } catch (error) {
+      } catch {
         toast.error("Failed to fetch ticket details.");
         navigate("/");
       }
@@ -29,82 +28,85 @@ const Ticket = () => {
   }, [bookingId, navigate]);
 
   if (!ticket) {
-    return <p className="text-center mt-20 text-lg text-gray-600">Loading ticket details...</p>;
+    return <p className="px-4 pt-28 text-center text-slate-500">Loading ticket details...</p>;
   }
 
   const {
     bookingId: id,
-    bookedSeats,
+    bookedSeats = [],
     amountPaid,
     eventId,
     userId
   } = ticket;
 
+  const venueName = eventId?.venueId?.venueName;
+  const venueLocation = eventId?.venueId?.venueLocation;
+
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 mt-20">
-      <Card className="max-w-3xl w-full rounded-2xl shadow-xl border border-gray-200 bg-white">
-        <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-t-2xl p-6">
-          <CardTitle className="text-3xl font-bold tracking-wide">🎫 Ticket Confirmation</CardTitle>
-          <p className="text-sm mt-1 opacity-90">Please bring this to the event for verification.</p>
-        </CardHeader>
+    <PageShell>
+      <div className="mx-auto max-w-md fade-up">
+        <article className="overflow-hidden rounded-[1.5rem] border border-[color:var(--border)] bg-white shadow-[0_20px_50px_rgba(17,24,39,0.08)]">
+          <header className="relative overflow-hidden bg-gradient-to-br from-[#e11d48] to-[#9f1239] px-6 py-6 text-white">
+            <div className="absolute -right-8 -top-10 h-28 w-28 rounded-full bg-white/10" />
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/80">EventSphere ticket</p>
+            <h1 className="mt-2 font-display text-2xl font-bold leading-tight">{eventId?.title || "Your ticket"}</h1>
+            <p className="mt-2 text-sm text-white/90">{formatEventWhen(eventId?.startTime)}</p>
+          </header>
 
-        <CardContent className="p-6 space-y-6">
-          <div className="flex justify-between flex-wrap">
-            <div className="mb-2">
-              <h3 className="text-xl font-semibold text-gray-800">{eventId?.title}</h3>
-              <p className="text-sm text-gray-600">
-                {new Date(eventId?.startTime).toLocaleString()} – {new Date(eventId?.endTime).toLocaleString()}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-gray-500">Booking ID</p>
-              <p className="text-sm font-mono text-blue-700 bg-gray-100 px-2 py-1 rounded">{id}</p>
-            </div>
-          </div>
-
-          <Separator />
-
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Booked Seats</p>
-            <div className="flex flex-wrap gap-2">
-              {bookedSeats.map((seat, idx) => (
-                <span
-                  key={idx}
-                  className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium"
-                >
-                  {seat}
-                </span>
-              ))}
+          <div className="relative border-b border-dashed border-[color:var(--border)] px-6 py-5">
+            <span className="absolute -left-3 top-0 h-6 w-6 -translate-y-1/2 rounded-full bg-[color:var(--paper)]" />
+            <span className="absolute -right-3 top-0 h-6 w-6 -translate-y-1/2 rounded-full bg-[color:var(--paper)]" />
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">Venue</p>
+                <p className="mt-1 font-semibold text-ink">{venueName || "See event details"}</p>
+                {venueLocation && <p className="text-xs text-slate-500">{venueLocation}</p>}
+              </div>
+              <div className="text-right">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">Booking ID</p>
+                <p className="mt-1 break-all font-mono text-[11px] font-semibold text-slate-700">{id}</p>
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-5 px-6 py-5">
             <div>
-              <p className="text-sm text-gray-500">Name</p>
-              <p className="text-base font-medium text-gray-700">{userId?.username}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">Seats</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {bookedSeats.map((seat) => (
+                  <span key={seat} className="chip">{seat}</span>
+                ))}
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-gray-500">Email</p>
-              <p className="text-base font-medium text-gray-700">{userId?.email}</p>
+
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">Name</p>
+                <p className="mt-1 font-semibold text-ink">{userId?.username}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">Email</p>
+                <p className="mt-1 break-all font-medium text-slate-700">{userId?.email}</p>
+              </div>
+            </div>
+
+            <div className="flex items-end justify-between border-t border-[color:var(--border)] pt-4">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">Amount paid</p>
+                <p className="font-display text-3xl font-bold text-ink">₹{amountPaid}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate("/my-bookings")}
+                className="brand-btn h-10"
+              >
+                My bookings
+              </button>
             </div>
           </div>
-
-          <Separator />
-
-          <div className="text-center">
-            <p className="text-gray-500 text-sm">Amount Paid</p>
-            <p className="text-3xl font-bold text-green-600">₹{amountPaid}</p>
-          </div>
-
-          <Button
-            onClick={() => navigate("/")}
-            className="w-full mt-4 bg-blue-600 text-white hover:bg-blue-700"
-          >
-            Go to Home
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+        </article>
+      </div>
+    </PageShell>
   );
 };
 

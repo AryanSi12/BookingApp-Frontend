@@ -1,6 +1,6 @@
-import React, { use, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Menu, X } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { clearUserDetails, setUserDetails } from '../Redux/userSlice';
 import axios from 'axios';
@@ -12,182 +12,185 @@ import {
   DropdownMenuSeparator,
 } from '@/Components/ui/dropdown-menu';
 import { Avatar, AvatarImage, AvatarFallback } from '@/Components/ui/avatar';
+import {
+  API_BASE,
+  clearAuthToken,
+  fetchCurrentUserDetails,
+  hydrateAuthToken,
+} from '@/lib/api';
+
+const linkClass = ({ isActive }) =>
+  `relative text-sm font-semibold transition ${
+    isActive
+      ? 'text-brand after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-brand'
+      : 'text-slate-600 hover:text-ink'
+  }`;
 
 const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isLoggedIn, userDetails } = useSelector((state) => state.user);
+  const { isLoggedIn, userDetails, token } = useSelector((state) => state.user);
   const [menuOpen, setMenuOpen] = useState(false);
+  const isOrganizer = userDetails?.roles?.includes('ORGANIZER');
 
   useEffect(() => {
-    const validateToken = async () => {
+    hydrateAuthToken(token);
+  }, [token]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    let cancelled = false;
+
+    const syncSession = async () => {
+      hydrateAuthToken(token);
       try {
-        console.log("Validating token...");
-        
-        const response = await axios.get('https://bookingapp-backend-hsy3.onrender.com/User/getCurrUser', {
-          withCredentials: true,
-        });
-        console.log("Token validation response:", response.data);
-        
-        if (response) {
-        } else {
-          dispatch(clearUserDetails());
+        await axios.get(`${API_BASE}/User/getCurrUser`, { withCredentials: true });
+        const details = await fetchCurrentUserDetails();
+        if (!cancelled && details) {
+          dispatch(
+            setUserDetails({
+              userDetails: details,
+              token: token || hydrateAuthToken(),
+            })
+          );
         }
       } catch (error) {
-        dispatch(clearUserDetails());
+        console.error('Session validation failed:', error);
+        if (!cancelled) {
+          clearAuthToken();
+          dispatch(clearUserDetails());
+        }
       }
     };
 
-    if (isLoggedIn) {
-      validateToken();
-    }
-  }, []);
-
-  useEffect(() => {
-    console.log(userDetails);
-
-    const fetchUserDetails = async () => {
-      try {
-        const response = await axios.get("https://bookingapp-backend-hsy3.onrender.com/User/getUserDetails", { withCredentials: true });
-        console.log("User details fetched:", response.data);
-        dispatch(
-          setUserDetails({
-            userDetails: {
-              username: response.data.username,
-              email: response.data.email,
-              userId: response.data.userId,
-              userImage: response.data.userImage,
-              roles: response.data.roles,
-              createdAt: response.data.createdAt,
-              updatedAt: response.data.updatedAt,
-            },
-            token: response.data.token,
-            isLoggedIn: true,
-          })
-        );
-        // You can dispatch the user details to the Redux store if needed
-      } catch (error) {
-        console.error("Error fetching user details:", error);
-      }
+    syncSession();
+    return () => {
+      cancelled = true;
     };
-
-    if (isLoggedIn) {
-      fetchUserDetails();
-    }
-  }, [isLoggedIn]);
+  }, [dispatch, isLoggedIn, token]);
 
   const handleLogout = async () => {
     try {
-      const response = await axios.post("https://bookingapp-backend-hsy3.onrender.com/User/Logout", null, { withCredentials: true });
-      console.log("Logout successful:", response);
-
+      await axios.post(`${API_BASE}/User/Logout`, null, { withCredentials: true });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      clearAuthToken();
       dispatch(clearUserDetails());
       navigate('/login');
-    } catch (error) {
-      console.error("Logout error:", error);
     }
   };
 
+  const closeMenu = () => setMenuOpen(false);
+
   return (
-    <nav className="w-full ml-0 md:ml-36 absolute top-0 left-0 z-20 bg-transparent px-4 md:px-6 py-4 md:py-5 flex justify-between items-center max-w-7xl mx-auto">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-[color:var(--border)]/80 bg-white/85 backdrop-blur-xl">
+      <nav className="page-shell flex h-[4.25rem] items-center justify-between gap-4">
+        <Link to="/" className="shrink-0 font-display text-[1.35rem] font-extrabold tracking-tight text-ink">
+          Event<span className="text-brand">Sphere</span>
+        </Link>
 
-      <div className="text-2xl font-bold text-white">EventSphere</div>
+        <div className="hidden items-center gap-8 md:flex">
+          <NavLink to="/" end className={linkClass}>Home</NavLink>
+          <NavLink to="/get-all-events" className={linkClass}>Events</NavLink>
+          <NavLink to="/book-events" className={linkClass}>Book</NavLink>
+        </div>
 
-      {isLoggedIn ? (
-        <>
-          <div className="hidden md:flex gap-8 text-white text-sm font-medium items-center">
-            <Link to="/" className="hover:text-cyan-300 transition">Home</Link>
-            <Link to="/get-all-events" className="hover:text-cyan-300 transition">Events</Link>
-            <Link to="/create-event" className="hover:text-cyan-300 transition">Create Event</Link>
-            <Link to="/create-venue" className="hover:text-cyan-300 transition">Create Venue</Link>
-
-            {/* Profile Dropdown */}
+        {isLoggedIn ? (
+          <div className="hidden items-center gap-3 md:flex">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Avatar className="cursor-pointer">
-                  <AvatarImage src={userDetails?.userImage || ''} alt="@user" />
-                  <AvatarFallback>{userDetails?.username || 'U'}</AvatarFallback>
-                </Avatar>
+                <button type="button" className="rounded-full outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-brand/40">
+                  <Avatar className="h-10 w-10 cursor-pointer ring-2 ring-white shadow-sm">
+                    <AvatarImage src={userDetails?.userImage || ''} alt={userDetails?.username || 'Account'} />
+                    <AvatarFallback className="bg-brand-soft font-semibold text-brand">
+                      {userDetails?.username?.charAt(0)?.toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-48 mt-2">
+              <DropdownMenuContent className="mt-2 w-52 rounded-xl" align="end">
                 <DropdownMenuItem onClick={() => navigate('/profile')}>Profile</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/my-bookings')}>My Bookings</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/my-events')}>My Events</DropdownMenuItem>
+                {isOrganizer && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate('/my-events')}>My Events</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/create-event')}>Create Event</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/create-venue')}>Create Venue</DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                <DropdownMenuItem onClick={handleLogout} className="text-brand">
                   Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+        ) : (
+          <div className="hidden items-center gap-2 md:flex">
+            <Link to="/signup-organizer" className="px-3 py-2 text-sm font-semibold text-slate-600 hover:text-ink">
+              Host an event
+            </Link>
+            <Link to="/login" className="ghost-btn h-10 px-4">
+              Sign in
+            </Link>
+            <Link to="/signup-user" className="brand-btn h-10 px-4">
+              Sign up
+            </Link>
+          </div>
+        )}
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
-            {menuOpen ? (
-              <X size={28} onClick={() => setMenuOpen(false)} className="cursor-pointer" />
+        <button
+          type="button"
+          className="rounded-xl p-2 text-ink md:hidden"
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          {menuOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
+      </nav>
+
+      {menuOpen && (
+        <div className="border-t border-[color:var(--border)] bg-white px-4 py-4 md:hidden">
+          <div className="flex flex-col gap-3 text-sm font-semibold text-slate-700">
+            <Link to="/" onClick={closeMenu}>Home</Link>
+            <Link to="/get-all-events" onClick={closeMenu}>Events</Link>
+            <Link to="/book-events" onClick={closeMenu}>Book</Link>
+            {isLoggedIn ? (
+              <>
+                <Link to="/profile" onClick={closeMenu}>Profile</Link>
+                <Link to="/my-bookings" onClick={closeMenu}>My Bookings</Link>
+                {isOrganizer && (
+                  <>
+                    <Link to="/my-events" onClick={closeMenu}>My Events</Link>
+                    <Link to="/create-event" onClick={closeMenu}>Create Event</Link>
+                    <Link to="/create-venue" onClick={closeMenu}>Create Venue</Link>
+                  </>
+                )}
+                <button
+                  type="button"
+                  className="text-left text-brand"
+                  onClick={() => {
+                    handleLogout();
+                    closeMenu();
+                  }}
+                >
+                  Logout
+                </button>
+              </>
             ) : (
-              <Menu size={28} onClick={() => setMenuOpen(true)} className="cursor-pointer" />
+              <>
+                <Link to="/login" onClick={closeMenu}>Sign in</Link>
+                <Link to="/signup-user" onClick={closeMenu}>Sign up</Link>
+                <Link to="/signup-organizer" onClick={closeMenu}>Host an event</Link>
+              </>
             )}
           </div>
-
-          {/* Mobile Dropdown Menu */}
-          {menuOpen && (
-            <div className="absolute top-16 right-6 bg-slate-800 p-5 rounded-lg shadow-lg flex flex-col gap-4 md:hidden z-30 text-white">
-              <Link to="/profile" onClick={() => setMenuOpen(false)}>My Profile</Link>
-              <Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
-              <Link to="/get-all-events" onClick={() => setMenuOpen(false)}>Events</Link>
-              <Link to="/create-event" onClick={() => setMenuOpen(false)}>Create Event</Link>
-              <Link to="/create-venue" onClick={() => setMenuOpen(false)}>Create Venue</Link>
-              
-              <Link to="/my-bookings" onClick={() => setMenuOpen(false)}>My Bookings</Link>
-              <Link to="/my-events" onClick={() => setMenuOpen(false)}>My Events</Link>
-              <button
-                onClick={() => {
-                  handleLogout();
-                  setMenuOpen(false);
-                }}
-                className="text-left hover:text-red-400"
-              >
-                Logout
-              </button>
-            </div>
-          )}
-        </>
-      ) : (
-        <>
-          {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex gap-4">
-            <Link to="/signup-organizer" className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-              Sign Up as Organizer
-            </Link>
-            <Link to="/signup-user" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-              Sign Up as User
-            </Link>
-            <Link to="/login" className="bg-slate-700 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-              Login
-            </Link>
-          </div>
-
-          {/* Mobile Auth Buttons */}
-          <div className="md:hidden">
-            {menuOpen ? (
-              <X size={28} onClick={() => setMenuOpen(false)} className="cursor-pointer" />
-            ) : (
-              <Menu size={28} onClick={() => setMenuOpen(true)} className="cursor-pointer" />
-            )}
-          </div>
-
-          {menuOpen && (
-            <div className="absolute top-16 right-6 bg-slate-800 p-5 rounded-lg shadow-lg flex flex-col gap-4 md:hidden z-30 text-white">
-              <Link to="/signup-organizer" onClick={() => setMenuOpen(false)}>Sign Up as Organizer</Link>
-              <Link to="/signup-user" onClick={() => setMenuOpen(false)}>Sign Up as User</Link>
-              <Link to="/login" onClick={() => setMenuOpen(false)}>Login</Link>
-            </div>
-          )}
-
-        </>
+        </div>
       )}
-    </nav>
+    </header>
   );
 };
 

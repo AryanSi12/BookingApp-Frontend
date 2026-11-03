@@ -1,16 +1,18 @@
 import React, { useState } from "react";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
-import { Button } from "@/Components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import axios from "axios";
 import { setUserDetails } from "../Redux/userSlice";
-import { toast } from "sonner"; // ✅ Sonner toast import
+import { toast } from "sonner";
+import { PageShell, Surface } from "@/Components/ui/PageShell";
+import { API_BASE, clearAuthToken, completeLogin } from "@/lib/api";
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const [credentials, setCredentials] = useState({
     username: "",
@@ -24,93 +26,97 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await axios.post(
-        "https://bookingapp-backend-hsy3.onrender.com/Public/LoginUser",
+        `${API_BASE}/Public/LoginUser`,
         credentials,
         { withCredentials: true }
       );
 
-      dispatch(
-        setUserDetails({
-          userDetails: credentials,
-          token: response.data.token,
-          isLoggedIn: true,
-        })
-      );
+      const { token, userDetails } = await completeLogin(response.data);
+      dispatch(setUserDetails({ userDetails, token }));
 
-      toast.success("Login successful!"); // ✅ Success toast
+      toast.success("Login successful!");
       navigate("/");
     } catch (error) {
+      clearAuthToken();
       if (error.response) {
-        toast.error(error.response.data.message || "Login failed."); // ✅ Error toast
+        const message =
+          typeof error.response.data === "string"
+            ? error.response.data
+            : error.response.data?.message;
+        toast.error(message || "Login failed.");
       } else if (error.request) {
         toast.error("No response from server.");
       } else {
-        toast.error("Error during login.");
+        toast.error(error.message || "Error during login.");
       }
       console.error("Login error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-transparent px-4">
-      <div className="w-full max-w-lg p-8 bg-gradient-to-tr from-purple-200 via-white to-purple-300 rounded-xl shadow-xl space-y-6">
-        <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white">
-          Login
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Username */}
-          <div>
-            <Label htmlFor="username" className="text-gray-700 dark:text-gray-300">
-              Username
-            </Label>
-            <Input
-              id="username"
-              name="username"
-              value={credentials.username}
-              onChange={handleChange}
-              placeholder="Enter your username"
-              className="mt-1 text-gray-900 dark:text-white"
-              required
-            />
-          </div>
-
-          {/* Password */}
-          <div>
-            <Label htmlFor="password" className="text-gray-700 dark:text-gray-300">
-              Password
-            </Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              value={credentials.password}
-              onChange={handleChange}
-              placeholder="********"
-              className="mt-1 text-gray-900 dark:text-white"
-              required
-            />
-          </div>
-
-          {/* Submit Button */}
-          <Button type="submit" variant="default" className="w-full text-lg py-6">
-            Login
-          </Button>
-
-          {/* Redirect */}
-          <p className="text-center text-sm text-gray-700 dark:text-gray-300">
-            Don't have an account?{" "}
-            <Link
-              to="/signup"
-              className="text-blue-600 hover:underline dark:text-blue-400"
-            >
-              Sign up here
-            </Link>
+    <PageShell>
+      <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-[0.95fr_1.05fr] md:items-center">
+        <Surface className="fade-up hidden overflow-hidden bg-gradient-to-br from-[#fff7f8] via-white to-[#f3efe9] p-8 md:block">
+          <p className="section-kicker">Welcome back</p>
+          <h1 className="mt-3 font-display text-4xl font-extrabold text-ink">
+            Your next seat is one login away.
+          </h1>
+          <p className="mt-4 text-sm leading-relaxed text-slate-600">
+            Sign in to browse events, pick seats, and keep every ticket in one place.
           </p>
-        </form>
+        </Surface>
+
+        <Surface className="fade-up-delay p-6 md:p-8">
+          <h2 className="font-display text-3xl font-bold text-ink">Sign in</h2>
+          <p className="mt-1 text-sm text-slate-500">Use your EventSphere account to continue.</p>
+          <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+            <div>
+              <Label htmlFor="username" className="mb-1.5 text-slate-700">Username</Label>
+              <Input
+                id="username"
+                name="username"
+                value={credentials.username}
+                onChange={handleChange}
+                placeholder="Enter your username"
+                className="mt-1 h-11 rounded-xl"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="password" className="mb-1.5 text-slate-700">Password</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                value={credentials.password}
+                onChange={handleChange}
+                placeholder="********"
+                className="mt-1 h-11 rounded-xl"
+                required
+              />
+            </div>
+            <button type="submit" className="brand-btn w-full" disabled={loading}>
+              {loading ? "Signing in..." : "Sign in"}
+            </button>
+            <p className="text-center text-sm text-slate-600">
+              New here?{" "}
+              <Link to="/signup-user" className="font-semibold text-brand hover:underline">
+                Create an account
+              </Link>
+              {" · "}
+              <Link to="/signup-organizer" className="font-semibold text-brand hover:underline">
+                Host events
+              </Link>
+            </p>
+          </form>
+        </Surface>
       </div>
-    </div>
+    </PageShell>
   );
 };
 
