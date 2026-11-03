@@ -3,7 +3,7 @@ import React from "react";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 
-const stripePromise = loadStripe("pk_test_51RNBdePO8aWyW42oAYMVgDjOaufFIL8fZAKYhwVO7IswncauS1irbFwM9vk1YO7ywF7aHaUMcn0nVt3tVlIGmToZ00IRTyXJP4"); // Replace with your Stripe public key
+const stripePromise = loadStripe("pk_test_51UXcqZPVJOkd7l6vX4HUPYfbhkSQE8tuxWOzlXp0eB9ujTfdsqNtalfhnWWw6O5CtkHHVkFcePCGp1JzKlYFLapw00TPMdw5dT");
 
 const StripeProvider = ({ children }) => {
   return <Elements stripe={stripePromise}>{children}</Elements>;
