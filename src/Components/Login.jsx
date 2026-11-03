@@ -7,10 +7,12 @@ import axios from "axios";
 import { setUserDetails } from "../Redux/userSlice";
 import { toast } from "sonner";
 import { PageShell, Surface } from "@/Components/ui/PageShell";
+import { API_BASE, clearAuthToken, completeLogin } from "@/lib/api";
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const [credentials, setCredentials] = useState({
     username: "",
@@ -24,32 +26,35 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await axios.post(
-        "https://bookingapp-backend-hsy3.onrender.com/Public/LoginUser",
+        `${API_BASE}/Public/LoginUser`,
         credentials,
         { withCredentials: true }
       );
 
-      dispatch(
-        setUserDetails({
-          userDetails: credentials,
-          token: response.data.token,
-          isLoggedIn: true,
-        })
-      );
+      const { token, userDetails } = await completeLogin(response.data);
+      dispatch(setUserDetails({ userDetails, token }));
 
       toast.success("Login successful!");
       navigate("/");
     } catch (error) {
+      clearAuthToken();
       if (error.response) {
-        toast.error(error.response.data.message || "Login failed.");
+        const message =
+          typeof error.response.data === "string"
+            ? error.response.data
+            : error.response.data?.message;
+        toast.error(message || "Login failed.");
       } else if (error.request) {
         toast.error("No response from server.");
       } else {
-        toast.error("Error during login.");
+        toast.error(error.message || "Error during login.");
       }
       console.error("Login error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -95,8 +100,8 @@ const Login = () => {
                 required
               />
             </div>
-            <button type="submit" className="brand-btn w-full">
-              Sign in
+            <button type="submit" className="brand-btn w-full" disabled={loading}>
+              {loading ? "Signing in..." : "Sign in"}
             </button>
             <p className="text-center text-sm text-slate-600">
               New here?{" "}

@@ -12,6 +12,12 @@ import {
   DropdownMenuSeparator,
 } from '@/Components/ui/dropdown-menu';
 import { Avatar, AvatarImage, AvatarFallback } from '@/Components/ui/avatar';
+import {
+  API_BASE,
+  clearAuthToken,
+  fetchCurrentUserDetails,
+  hydrateAuthToken,
+} from '@/lib/api';
 
 const linkClass = ({ isActive }) =>
   `relative text-sm font-semibold transition ${
@@ -23,65 +29,56 @@ const linkClass = ({ isActive }) =>
 const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isLoggedIn, userDetails } = useSelector((state) => state.user);
+  const { isLoggedIn, userDetails, token } = useSelector((state) => state.user);
   const [menuOpen, setMenuOpen] = useState(false);
   const isOrganizer = userDetails?.roles?.includes('ORGANIZER');
 
   useEffect(() => {
-    const validateToken = async () => {
-      try {
-        const response = await axios.get('https://bookingapp-backend-hsy3.onrender.com/User/getCurrUser', {
-          withCredentials: true,
-        });
-        if (!response) {
-          dispatch(clearUserDetails());
-        }
-      } catch {
-        dispatch(clearUserDetails());
-      }
-    };
-
-    if (isLoggedIn) {
-      validateToken();
-    }
-  }, [dispatch, isLoggedIn]);
+    hydrateAuthToken(token);
+  }, [token]);
 
   useEffect(() => {
-    const fetchUserDetails = async () => {
+    if (!isLoggedIn) return;
+
+    let cancelled = false;
+
+    const syncSession = async () => {
+      hydrateAuthToken(token);
       try {
-        const response = await axios.get('https://bookingapp-backend-hsy3.onrender.com/User/getUserDetails', { withCredentials: true });
-        dispatch(
-          setUserDetails({
-            userDetails: {
-              username: response.data.username,
-              email: response.data.email,
-              userId: response.data.userId,
-              userImage: response.data.userImage,
-              roles: response.data.roles,
-              createdAt: response.data.createdAt,
-              updatedAt: response.data.updatedAt,
-            },
-            token: response.data.token,
-            isLoggedIn: true,
-          })
-        );
+        await axios.get(`${API_BASE}/User/getCurrUser`, { withCredentials: true });
+        const details = await fetchCurrentUserDetails();
+        if (!cancelled && details) {
+          dispatch(
+            setUserDetails({
+              userDetails: details,
+              token: token || hydrateAuthToken(),
+            })
+          );
+        }
       } catch (error) {
-        console.error('Error fetching user details:', error);
+        console.error('Session validation failed:', error);
+        if (!cancelled) {
+          clearAuthToken();
+          dispatch(clearUserDetails());
+        }
       }
     };
 
-    if (isLoggedIn) {
-      fetchUserDetails();
-    }
-  }, [dispatch, isLoggedIn]);
+    syncSession();
+    return () => {
+      cancelled = true;
+    };
+  }, [dispatch, isLoggedIn, token]);
 
   const handleLogout = async () => {
     try {
-      await axios.post('https://bookingapp-backend-hsy3.onrender.com/User/Logout', null, { withCredentials: true });
-      dispatch(clearUserDetails());
-      navigate('/login');
+      await axios.post(`${API_BASE}/User/Logout`, null, { withCredentials: true });
     } catch (error) {
       console.error('Logout error:', error);
+    } finally {
+      clearAuthToken();
+      dispatch(clearUserDetails());
+      navigate('/login');
     }
   };
 

@@ -9,6 +9,7 @@ import { setUserDetails } from "../Redux/userSlice";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { PageShell, Surface } from "@/Components/ui/PageShell";
+import { API_BASE, clearAuthToken, completeLogin } from "@/lib/api";
 
 const SignupAsUser = () => {
   const [formData, setFormData] = useState({
@@ -47,19 +48,14 @@ const SignupAsUser = () => {
       form.append("user", userJson);
       form.append("image", formData.image);
 
-      const response = await axios.post("https://bookingapp-backend-hsy3.onrender.com/Public/AddUser", form, {
+      await axios.post(`${API_BASE}/Public/AddUser`, form, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
-      const jsonForLogin = JSON.stringify({
-        username: formData.username,
-        password: formData.password,
-      });
-
-      await axios.post(
-        "https://bookingapp-backend-hsy3.onrender.com/Public/LoginUser",
+      const loginResponse = await axios.post(
+        `${API_BASE}/Public/LoginUser`,
         {
           username: formData.username,
           password: formData.password
@@ -67,24 +63,24 @@ const SignupAsUser = () => {
         { withCredentials: true }
       );
 
-      dispatch(
-        setUserDetails({
-          userDetails: jsonForLogin,
-          token: response.data.token,
-          isLoggedIn: true,
-        })
-      );
+      const { token, userDetails } = await completeLogin(loginResponse.data);
+      dispatch(setUserDetails({ userDetails, token }));
 
       toast.success("Account created!");
       navigate("/");
     } catch (error) {
+      clearAuthToken();
       if (error.response) {
-        toast.error(error.response.data?.message || "Signup failed.");
+        const message =
+          typeof error.response.data === "string"
+            ? error.response.data
+            : error.response.data?.message;
+        toast.error(message || "Signup failed.");
         console.error("Status:", error.response.status);
       } else if (error.request) {
         toast.error("No response from server.");
       } else {
-        toast.error("Error during signup.");
+        toast.error(error.message || "Error during signup.");
       }
     }
   };
