@@ -1,0 +1,11 @@
+---
+description: UI development rules for the booking app
+alwaysApply: true
+---
+
+# UI Development Rules
+
+- Follow `docs/ui-prd.md` for all UI work
+- Never change backend API calls or endpoints
+- Work one PRD phase at a time
+- Follow the `ui-change-evidence` skill for every UI change
