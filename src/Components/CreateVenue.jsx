@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { Input } from "@/Components/ui/input";
+import { createVenue } from "@/services/venues";
 import { Label } from "@/Components/ui/label";
 import { Textarea } from "@/Components/ui/textarea";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { Stepper } from "@/Components/ui/PageShell";
 
 const CreateVenue = () => {
    const { isLoggedIn } = useSelector((state) => state.user);
@@ -55,16 +56,7 @@ const CreateVenue = () => {
       formData.append("venue", JSON.stringify(venueData));
       formData.append("image", image);
 
-      const response = await axios.post(
-        `https://bookingapp-backend-hsy3.onrender.com/Organizer/createVenue`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true,
-        }
-      );
+      const response = await createVenue(formData);
       
       toast.success("Venue created successfully!");
       console.log("Venue created:", response);
@@ -92,7 +84,10 @@ const CreateVenue = () => {
       <div className="mx-auto max-w-xl surface-card p-6 md:p-8 fade-up">
         <p className="section-kicker">Organizer</p>
         <h2 className="mt-2 font-display text-3xl font-bold text-ink">Create a venue</h2>
-        <p className="mt-1 text-sm text-slate-500">Set rows and columns once, then reuse the hall for events.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Set rows and columns once, then reuse the hall for events.</p>
+        <div className="mt-5">
+          <Stepper steps={["Layout", "Save"]} current={0} />
+        </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-4">
           <div>
@@ -163,6 +158,8 @@ const CreateVenue = () => {
             />
           </div>
 
+          <VenuePreview rows={venueData.rows} cols={venueData.col} />
+
           <button type="submit" disabled={loading} className="brand-btn mt-4 w-full">
             {loading ? "Creating..." : "Create venue"}
           </button>
@@ -171,5 +168,34 @@ const CreateVenue = () => {
     </div>
   );
 };
+
+function VenuePreview({ rows, cols }) {
+  const rowCount = Math.max(0, Number(rows) || 0);
+  const colCount = Math.max(0, Number(cols) || 0);
+  const previewRows = Math.min(rowCount, 12);
+  const previewCols = Math.min(colCount, 16);
+  if (!previewRows || !previewCols) return null;
+
+  return (
+    <div className="rounded-2xl border border-border bg-muted/50 p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Preview</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {rowCount} × {colCount}. The first row is VIP when the hall is created. This preview is not saved as a custom layout.
+      </p>
+      <div className="mt-3 space-y-1 overflow-x-auto">
+        {Array.from({ length: previewRows }).map((_, row) => (
+          <div key={row} className="flex gap-1">
+            {Array.from({ length: previewCols }).map((__, col) => (
+              <span
+                key={`${row}-${col}`}
+                className={`h-3.5 w-3.5 shrink-0 rounded-t-md rounded-b-sm ${row === 0 ? "bg-accent" : "bg-primary"}`}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default CreateVenue;

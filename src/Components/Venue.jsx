@@ -1,33 +1,50 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { toast } from "sonner";
+import { getVenueById } from "@/services/venues";
 import SeatMap from "@/Components/SeatMap";
-import { PageShell, Surface } from "@/Components/ui/PageShell";
+import { ErrorState, PageShell, Surface } from "@/Components/ui/PageShell";
 
 const Venue = () => {
   const { venueId } = useParams();
   const [venue, setVenue] = useState(null);
+  const [failed, setFailed] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
+    let cancelled = false;
     const fetchVenue = async () => {
+      setFailed(false);
       try {
-        const response = await axios.get(`https://bookingapp-backend-hsy3.onrender.com/User/getVenueById/${venueId}`, {
-          withCredentials: true,
-        });
-        setVenue(response.data.venue || response.data);
+        const response = await getVenueById(venueId);
+        const next = response.data.venue || response.data;
+        if (!cancelled) {
+          if (!next) setFailed(true);
+          else setVenue(next);
+        }
       } catch (error) {
+        if (!cancelled) setFailed(true);
         toast.error("Error fetching venue details");
         console.error(error);
       }
     };
 
     fetchVenue();
+    return () => {
+      cancelled = true;
+    };
   }, [venueId]);
 
+  if (failed) {
+    return (
+      <PageShell>
+        <ErrorState title="Venue unavailable" description="This hall could not be loaded." />
+      </PageShell>
+    );
+  }
+
   if (!venue) {
-    return <div className="px-4 pt-28 text-center text-slate-500">Loading venue details...</div>;
+    return <div className="px-4 pt-28 text-center text-muted-foreground">Loading venue details...</div>;
   }
 
   const seatCount = Array.isArray(venue.seats) ? venue.seats.length : (venue.rows || 0) * (venue.col || 0);

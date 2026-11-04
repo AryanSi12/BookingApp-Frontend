@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { getEventById, getSeatStatusByEventId } from "@/services/events";
+import { fetchAllBookingsByEventId } from "@/services/bookings";
+import { ErrorState, PageShell } from "@/Components/ui/PageShell";
 import { toast } from "sonner";
 import { PieChart, Pie, Cell, Tooltip, Legend, BarChart, XAxis, YAxis, CartesianGrid, Bar, ResponsiveContainer } from "recharts";
 
@@ -13,20 +15,28 @@ const EventAnalytics = () => {
   const [event, setEvent] = useState(null);
   const [seatStatusList, setSeatStatusList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [attendees, setAttendees] = useState([]);
+  const [attendeesNote, setAttendeesNote] = useState("");
 
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const eventRes = await axios.get(`https://bookingapp-backend-hsy3.onrender.com/User/getEventById/${eventId}`, {
-          withCredentials: true,
-        });
+        const eventRes = await getEventById(eventId);
         setEvent(eventRes.data);
 
-        const seatRes = await axios.get(`https://bookingapp-backend-hsy3.onrender.com/User/getSeatStatusByEventId/${eventId}`, {
-          withCredentials: true,
-        });
-        setSeatStatusList(seatRes.data);
+        const seatRes = await getSeatStatusByEventId(eventId);
+        setSeatStatusList(Array.isArray(seatRes.data) ? seatRes.data : []);
+
+        try {
+          const bookingRes = await fetchAllBookingsByEventId(eventId);
+          setAttendees(Array.isArray(bookingRes.data) ? bookingRes.data : []);
+        } catch (bookingError) {
+          console.error(bookingError);
+          setAttendeesNote("Attendee list is unavailable for this event.");
+        }
       } catch (err) {
+        setLoadError(true);
         toast.error("Failed to load event analytics.");
         console.error(err);
       } finally {
@@ -38,11 +48,19 @@ const EventAnalytics = () => {
   }, [eventId]);
 
   if (loading) {
-    return <div className="text-slate-700 text-center mt-24">Loading analytics...</div>;
+    return <div className="mt-24 text-center text-muted-foreground">Loading analytics...</div>;
   }
 
-  if (!event || seatStatusList.length === 0) {
-    return <div className="text-slate-700 text-center mt-24">No analytics data found.</div>;
+  if (loadError || !event) {
+    return (
+      <PageShell>
+        <ErrorState title="Analytics unavailable" description="This event could not be loaded." />
+      </PageShell>
+    );
+  }
+
+  if (seatStatusList.length === 0) {
+    return <div className="mt-24 text-center text-muted-foreground">No analytics data found.</div>;
   }
 
   // Analytics Calculations
@@ -143,13 +161,95 @@ const EventAnalytics = () => {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="revenue" fill="#e11d48" name="Revenue (₹)" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+            <Bar dataKey="revenue" fill="hsl(var(--primary))" name="Revenue (₹)" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+        <Attendees bookings={attendees} note={attendeesNote} />
       </div>
     </div>
   );
 };
+
+function attendeeName(booking) {
+  return booking.userId?.username || booking.username || booking.user?.username || "Guest";
+}
+
+function attendeeEmail(booking) {
+  return booking.userId?.email || booking.email || booking.user?.email || "";
+}
+
+function attendeeSeats(booking) {
+  const seats = booking.bookedSeats || booking.seats || [];
+  return Array.isArray(seats) ? seats.join(" ") : String(seats);
+}
+
+function downloadAttendeeCsv(bookings) {
+  const header = ["bookingId", "name", "email", "seats", "amountPaid"];
+  const lines = [header.join(",")];
+  bookings.forEach((booking) => {
+    const cells = [
+      booking.bookingId || booking._id || "",
+      attendeeName(booking),
+      attendeeEmail(booking),
+      attendeeSeats(booking),
+      booking.amountPaid ?? "",
+    ].map((value) => `"${String(value).replace(/"/g, '""')}"`);
+    lines.push(cells.join(","));
+  });
+  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "attendees.csv";
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function Attendees({ bookings, note }) {
+  return (
+    <div className="surface-card p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-display text-xl font-bold text-ink">Attendees</h2>
+        <button
+          type="button"
+          className="ghost-btn h-11"
+          disabled={!bookings.length}
+          onClick={() => downloadAttendeeCsv(bookings)}
+        >
+          Download CSV
+        </button>
+      </div>
+      {note && <p className="mt-2 text-sm text-muted-foreground">{note}</p>}
+      {bookings.length === 0 ? (
+        <p className="mt-4 text-sm text-muted-foreground">No bookings loaded for this event.</p>
+      ) : (
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full min-w-[32rem] text-left text-sm">
+            <thead className="text-xs uppercase tracking-wide text-muted-foreground">
+              <tr>
+                <th className="py-2 pr-3 font-semibold">Name</th>
+                <th className="py-2 pr-3 font-semibold">Email</th>
+                <th className="py-2 pr-3 font-semibold">Seats</th>
+                <th className="py-2 font-semibold">Paid</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bookings.map((booking) => (
+                <tr key={booking.bookingId || booking._id || attendeeEmail(booking)} className="border-t border-border">
+                  <td className="py-3 pr-3 text-foreground">{attendeeName(booking)}</td>
+                  <td className="py-3 pr-3 text-muted-foreground">{attendeeEmail(booking)}</td>
+                  <td className="py-3 pr-3 text-foreground">{attendeeSeats(booking)}</td>
+                  <td className="py-3 text-foreground">{booking.amountPaid != null ? `₹${booking.amountPaid}` : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default EventAnalytics;

@@ -17,7 +17,7 @@ import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { toast } from "sonner";
-import axios from "axios";
+import { updateUserDetails } from "@/services/auth";
 
 export default function ProfilePage() {
   const { userDetails } = useSelector((state) => state.user);
@@ -41,17 +41,11 @@ export default function ProfilePage() {
 
     try {
       setLoading(true);
-      const response = await axios.put(
-        "https://bookingapp-backend-hsy3.onrender.com/User/updateUserDetails",
-        {
-          username,
-          password,
-          currentPassword,
-        },
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await updateUserDetails({
+        username,
+        password,
+        currentPassword,
+      });
       if (response.status === 200) {
         toast.success("Profile updated successfully!");
       } else {

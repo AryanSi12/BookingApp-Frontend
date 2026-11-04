@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { Input } from "@/Components/ui/input";
+import { createEvent } from "@/services/events";
 import { Button } from "@/Components/ui/button";
 import { Label } from "@/Components/ui/label";
 import { Card, CardContent } from "@/Components/ui/card";
@@ -8,6 +8,7 @@ import { Textarea } from "@/Components/ui/textarea";
 import { toast } from "sonner";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { Stepper } from "@/Components/ui/PageShell";
 
 const AddEvent = () => {
   const { userDetails, isLoggedIn } = useSelector((state) => state.user);
@@ -63,16 +64,7 @@ const AddEvent = () => {
       formData.append("event", JSON.stringify(eventPayload));
       formData.append("image", eventImage);
 
-      const response = await axios.post(
-        `https://bookingapp-backend-hsy3.onrender.com/Organizer/createEvent/${venueId}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true,
-        }
-      );
+      const response = await createEvent(venueId, formData);
 
       toast.success("Event created successfully!");
       const eventId = response.data?._id || response.data?.eventId;
@@ -92,13 +84,16 @@ const AddEvent = () => {
       <Card className="surface-card w-full max-w-2xl border-[color:var(--border)] p-6 sm:p-8">
         <CardContent>
           <p className="section-kicker text-center sm:text-left">Organizer</p>
-          <h2 className="mb-8 mt-2 text-center font-display text-2xl font-bold text-ink sm:text-left sm:text-3xl">
+          <h2 className="mt-2 text-center font-display text-2xl font-bold text-ink sm:text-left sm:text-3xl">
             Create a new event
           </h2>
+          <div className="mb-8 mt-5">
+            <Stepper steps={["Venue", "Details"]} current={1} />
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="title" className="text-gray-700">
+              <Label htmlFor="title" className="text-foreground">
                 Event Title
               </Label>
               <Input
@@ -113,7 +108,7 @@ const AddEvent = () => {
             </div>
 
             <div>
-              <Label htmlFor="aboutEvent" className="text-gray-700">
+              <Label htmlFor="aboutEvent" className="text-foreground">
                 About the Event
               </Label>
               <Textarea
@@ -130,7 +125,7 @@ const AddEvent = () => {
 
             <div className="flex flex-col sm:flex-row sm:space-x-4 gap-6">
               <div className="flex-1">
-                <Label htmlFor="startTime" className="text-gray-700">
+                <Label htmlFor="startTime" className="text-foreground">
                   Start Time
                 </Label>
                 <Input
@@ -144,7 +139,7 @@ const AddEvent = () => {
                 />
               </div>
               <div className="flex-1">
-                <Label htmlFor="endTime" className="text-gray-700">
+                <Label htmlFor="endTime" className="text-foreground">
                   End Time
                 </Label>
                 <Input
@@ -160,7 +155,7 @@ const AddEvent = () => {
             </div>
 
             <div>
-              <Label htmlFor="eventImage" className="text-gray-700">
+              <Label htmlFor="eventImage" className="text-foreground">
                 Event Image
               </Label>
               <Input

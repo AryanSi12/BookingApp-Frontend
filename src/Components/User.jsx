@@ -81,7 +81,7 @@ const User = () => {
             {loading ? (
               <Skeleton className="h-24 w-full" />
             ) : (
-              <Card className="mt-5 border border-[color:var(--border)] bg-[#faf7f3] p-3">
+              <Card className="mt-5 border border-[color:var(--border)] bg-muted p-3">
                 <CardHeader className="flex items-center gap-2">
                   <UserCircle className="text-brand" />
                   <CardTitle className="font-display text-xl text-ink">

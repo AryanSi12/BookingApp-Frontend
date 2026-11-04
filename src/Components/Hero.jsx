@@ -1,35 +1,47 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, MapPin, PlusSquare, Ticket } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, PlusSquare, Search, Ticket } from "lucide-react";
 import { Button } from "@/Components/ui/button";
 import { useSelector } from "react-redux";
-import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { getAllEvents } from "@/services/events";
 import EventPosterCard from "@/Components/EventPosterCard";
-import { EmptyState, Surface } from "@/Components/ui/PageShell";
+import { EmptyState, ErrorState, Surface } from "@/Components/ui/PageShell";
+
+const CATEGORIES = ["Music", "Comedy", "Sports", "Theatre", "Workshops", "Food"];
 
 const Hero = () => {
   const { userDetails, isLoggedIn } = useSelector((state) => state.user);
+  const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [search, setSearch] = useState("");
   const scrollContainerRef = useRef(null);
   const isOrganizer = isLoggedIn && userDetails?.roles?.includes("ORGANIZER");
 
+  const fetchEvents = async () => {
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const response = await getAllEvents();
+      setEvents(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      setLoadError(true);
+      console.error("Error fetching events:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await axios.get(
-          "https://bookingapp-backend-hsy3.onrender.com/User/getAllEvents",
-          { withCredentials: true }
-        );
-        setEvents(Array.isArray(response.data) ? response.data : []);
-      } catch (error) {
-        console.error("Error fetching events:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchEvents();
   }, []);
+
+  const submitSearch = (event) => {
+    event.preventDefault();
+    const query = search.trim();
+    navigate(query ? `/get-all-events?q=${encodeURIComponent(query)}` : "/get-all-events");
+  };
 
   const scrollByCards = (direction) => {
     scrollContainerRef.current?.scrollBy({ left: direction * 320, behavior: "smooth" });
@@ -38,7 +50,7 @@ const Hero = () => {
   return (
     <div className="pb-20 pt-16">
       <section className="relative overflow-hidden border-b border-[color:var(--border)]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(225,29,72,0.12),transparent_35%),radial-gradient(circle_at_85%_10%,rgba(17,24,39,0.06),transparent_30%),linear-gradient(135deg,#fffdfb,#f8f4ef_55%,#fff1f3)]" />
+        <div className="hero-wash absolute inset-0" />
         <div className="page-shell relative grid gap-10 py-12 md:grid-cols-[1.15fr_0.85fr] md:items-center md:py-16">
           <div className="fade-up max-w-xl">
             <p className="section-kicker">EventSphere</p>
@@ -48,8 +60,22 @@ const Hero = () => {
             <p className="mt-4 max-w-lg text-base leading-relaxed text-slate-600 md:text-lg">
               A cleaner ticket marketplace for discovering events, choosing seats, and walking in with your booking ready.
             </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link to={isLoggedIn ? "/book-events" : "/login"} className="brand-btn">
+            <form onSubmit={submitSearch} className="mt-7 flex max-w-lg flex-col gap-2 sm:flex-row">
+              <div className="relative flex-1">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="search"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Search shows, venues, cities"
+                  aria-label="Search shows"
+                  className="field-input pl-9"
+                />
+              </div>
+              <button type="submit" className="brand-btn">Search</button>
+            </form>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Link to={isLoggedIn ? "/book-events" : "/login"} className="ghost-btn">
                 Book tickets
               </Link>
               <Link to="/get-all-events" className="ghost-btn">
@@ -74,7 +100,7 @@ const Hero = () => {
                 { label: "Seat map", value: "Live" },
                 { label: "Checkout", value: "Secure" },
               ].map((item) => (
-                <div key={item.label} className="rounded-xl bg-[#faf7f3] px-3 py-4 text-center">
+                <div key={item.label} className="rounded-xl bg-muted px-3 py-4 text-center">
                   <p className="font-display text-lg font-bold text-ink">{item.value}</p>
                   <p className="mt-1 text-[11px] font-medium uppercase tracking-wide text-slate-500">{item.label}</p>
                 </div>
@@ -98,9 +124,15 @@ const Hero = () => {
         {loading ? (
           <div className="no-scrollbar flex gap-4 overflow-hidden">
             {Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="h-[22rem] w-44 shrink-0 animate-pulse rounded-2xl bg-white/70" />
+              <div key={index} className="h-[22rem] w-44 shrink-0 animate-pulse rounded-2xl bg-muted" />
             ))}
           </div>
+        ) : loadError ? (
+          <ErrorState
+            title="Listings unavailable"
+            description="The event catalog did not load. Try again in a moment."
+            onRetry={fetchEvents}
+          />
         ) : events.length === 0 ? (
           <EmptyState
             title="No events yet"
@@ -113,7 +145,7 @@ const Hero = () => {
               type="button"
               variant="outline"
               size="icon"
-              className="absolute -left-3 top-[42%] z-10 hidden rounded-full border-[color:var(--border)] bg-white shadow-md md:inline-flex"
+              className="absolute -left-3 top-[42%] z-10 hidden rounded-full border-border bg-card shadow-md md:inline-flex"
               onClick={() => scrollByCards(-1)}
               aria-label="Scroll events left"
             >
@@ -123,7 +155,7 @@ const Hero = () => {
               type="button"
               variant="outline"
               size="icon"
-              className="absolute -right-3 top-[42%] z-10 hidden rounded-full border-[color:var(--border)] bg-white shadow-md md:inline-flex"
+              className="absolute -right-3 top-[42%] z-10 hidden rounded-full border-border bg-card shadow-md md:inline-flex"
               onClick={() => scrollByCards(1)}
               aria-label="Scroll events right"
             >
@@ -143,6 +175,45 @@ const Hero = () => {
             </div>
           </div>
         )}
+      </section>
+
+      <section className="page-shell pb-4">
+        <p className="section-kicker">Browse by word</p>
+        <h2 className="mt-2 font-display text-2xl font-bold text-ink">Find a kind of night</h2>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {CATEGORIES.map((name) => (
+            <Link key={name} to={`/get-all-events?q=${encodeURIComponent(name)}`} className="chip hover:border-primary hover:text-primary">
+              {name}
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="page-shell grid gap-4 py-8 md:grid-cols-3">
+        {[
+          { step: "01", title: "Pick a show", copy: "Search the catalog or start from a poster." },
+          { step: "02", title: "Choose seats", copy: "VIP and regular seats are priced in the hall map." },
+          { step: "03", title: "Pay and keep the ticket", copy: "Checkout confirms the seats you already selected." },
+        ].map((item) => (
+          <Surface key={item.step} className="p-5">
+            <p className="font-mono text-xs font-semibold text-primary">{item.step}</p>
+            <h3 className="mt-2 font-display text-lg font-bold text-ink">{item.title}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">{item.copy}</p>
+          </Surface>
+        ))}
+      </section>
+
+      <section className="page-shell pb-4">
+        <Surface className="flex flex-col items-start justify-between gap-4 bg-gradient-to-br from-primary-50 via-card to-accent-50 p-6 md:flex-row md:items-center dark:from-primary-950 dark:via-card dark:to-accent-950">
+          <div>
+            <p className="section-kicker">Organizers</p>
+            <h2 className="mt-2 font-display text-2xl font-bold text-ink">Put your hall on sale</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Create a venue, publish an event, and watch seats fill.</p>
+          </div>
+          <Link to={isOrganizer ? "/Organizer" : "/signup-organizer"} className="brand-btn">
+            {isOrganizer ? "Open dashboard" : "Host an event"}
+          </Link>
+        </Surface>
       </section>
 
       {isOrganizer && (

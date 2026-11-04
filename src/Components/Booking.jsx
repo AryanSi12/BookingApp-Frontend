@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { bookSeat } from "@/services/bookings";
+import { getEventById, getSeatStatusByEventId } from "@/services/events";
 import {
   useStripe,
   useElements,
@@ -9,21 +10,21 @@ import {
 } from "@stripe/react-stripe-js";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { PageShell, Surface } from "@/Components/ui/PageShell";
+import { PageShell, Stepper, Surface } from "@/Components/ui/PageShell";
 import { formatEventWhen, seatPrice } from "@/lib/utils";
 
 const elementStyle = {
   style: {
     base: {
       fontSize: "16px",
-      color: "#111827",
+      color: "hsl(222 47% 11%)",
       fontFamily: "DM Sans, Arial, sans-serif",
       "::placeholder": {
         color: "#94a3b8"
       }
     },
     invalid: {
-      color: "#e11d48"
+      color: "hsl(243 75% 59%)"
     }
   }
 };
@@ -60,10 +61,7 @@ const Booking = () => {
 
     const loadSummary = async () => {
       try {
-        const eventRes = await axios.get(
-          `https://bookingapp-backend-hsy3.onrender.com/User/getEventById/${eventId}`,
-          { withCredentials: true }
-        );
+        const eventRes = await getEventById(eventId);
         const eventData = eventRes.data;
         const venueRef = eventData.venueId;
         let nextTotal = totalPrice;
@@ -71,10 +69,7 @@ const Booking = () => {
           if (selectedSeatDetails.length) {
             nextTotal = selectedSeatDetails.reduce((sum, seat) => sum + seatPrice(seat.seatType), 0);
           } else if (bookedSeats.length) {
-            const seatRes = await axios.get(
-              `https://bookingapp-backend-hsy3.onrender.com/User/getSeatStatusByEventId/${eventId}`,
-              { withCredentials: true }
-            );
+            const seatRes = await getSeatStatusByEventId(eventId);
             const byNumber = new Map((seatRes.data || []).map((seat) => [String(seat.seatNumber), seat]));
             nextTotal = bookedSeats.reduce((sum, number) => sum + seatPrice(byNumber.get(String(number))?.seatType), 0);
           }
@@ -100,11 +95,7 @@ const Booking = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post(
-        `https://bookingapp-backend-hsy3.onrender.com/User/bookSeat/${eventId}`,
-        { bookedSeats },
-        { withCredentials: true }
-      );
+      const res = await bookSeat(eventId, { bookedSeats });
 
       const { clientSecret, bookingDetails } = res.data;
       const result = await stripe.confirmCardPayment(clientSecret, {
@@ -148,11 +139,14 @@ const Booking = () => {
       <div className="mb-8 fade-up">
         <p className="section-kicker">Checkout</p>
         <h1 className="mt-2 font-display text-3xl font-bold text-ink">Confirm and pay</h1>
+        <div className="mt-5">
+          <Stepper steps={["Seats", "Pay", "Ticket"]} current={1} />
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <aside className="surface-card fade-up h-fit overflow-hidden">
-          <div className="border-b border-[color:var(--border)] bg-[#faf7f3] px-5 py-4">
+          <div className="border-b border-border bg-muted px-5 py-4">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Order summary</p>
           </div>
           <div className="p-5">
@@ -192,20 +186,20 @@ const Booking = () => {
           <div className="mt-6 space-y-4">
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700">Card number</label>
-              <div className="rounded-xl border border-[color:var(--border)] bg-white p-3.5">
+              <div className="rounded-xl border border-border bg-card p-3.5">
                 <CardNumberElement options={elementStyle} />
               </div>
             </div>
             <div className="flex gap-4">
               <div className="w-1/2">
                 <label className="mb-2 block text-sm font-semibold text-slate-700">Expiry</label>
-                <div className="rounded-xl border border-[color:var(--border)] bg-white p-3.5">
+                <div className="rounded-xl border border-border bg-card p-3.5">
                   <CardExpiryElement options={elementStyle} />
                 </div>
               </div>
               <div className="w-1/2">
                 <label className="mb-2 block text-sm font-semibold text-slate-700">CVC</label>
-                <div className="rounded-xl border border-[color:var(--border)] bg-white p-3.5">
+                <div className="rounded-xl border border-border bg-card p-3.5">
                   <CardCvcElement options={elementStyle} />
                 </div>
               </div>

@@ -3,7 +3,6 @@ import { Menu, X } from 'lucide-react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { clearUserDetails, setUserDetails } from '../Redux/userSlice';
-import axios from 'axios';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -12,18 +11,15 @@ import {
   DropdownMenuSeparator,
 } from '@/Components/ui/dropdown-menu';
 import { Avatar, AvatarImage, AvatarFallback } from '@/Components/ui/avatar';
-import {
-  API_BASE,
-  clearAuthToken,
-  fetchCurrentUserDetails,
-  hydrateAuthToken,
-} from '@/lib/api';
+import { clearAuthToken, hydrateAuthToken } from '@/services/api';
+import { fetchCurrentUserDetails, getCurrUser, logoutUser } from '@/services/auth';
+import ThemeToggle from '@/Components/ThemeToggle';
 
 const linkClass = ({ isActive }) =>
   `relative text-sm font-semibold transition ${
     isActive
-      ? 'text-brand after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-brand'
-      : 'text-slate-600 hover:text-ink'
+      ? 'text-primary after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-primary'
+      : 'text-muted-foreground hover:text-foreground'
   }`;
 
 const Navbar = () => {
@@ -45,7 +41,7 @@ const Navbar = () => {
     const syncSession = async () => {
       hydrateAuthToken(token);
       try {
-        await axios.get(`${API_BASE}/User/getCurrUser`, { withCredentials: true });
+        await getCurrUser();
         const details = await fetchCurrentUserDetails();
         if (!cancelled && details) {
           dispatch(
@@ -72,7 +68,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${API_BASE}/User/Logout`, null, { withCredentials: true });
+      await logoutUser();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -85,10 +81,10 @@ const Navbar = () => {
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-[color:var(--border)]/80 bg-white/85 backdrop-blur-xl">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-border/80 bg-background/70 backdrop-blur-lg">
       <nav className="page-shell flex h-[4.25rem] items-center justify-between gap-4">
-        <Link to="/" className="shrink-0 font-display text-[1.35rem] font-extrabold tracking-tight text-ink">
-          Event<span className="text-brand">Sphere</span>
+        <Link to="/" className="shrink-0 font-display text-[1.35rem] font-extrabold tracking-tight text-foreground">
+          Event<span className="text-primary">Sphere</span>
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
@@ -97,8 +93,10 @@ const Navbar = () => {
           <NavLink to="/book-events" className={linkClass}>Book</NavLink>
         </div>
 
+        <div className="ml-auto hidden items-center gap-2 md:flex">
+          <ThemeToggle />
         {isLoggedIn ? (
-          <div className="hidden items-center gap-3 md:flex">
+          <div className="flex items-center gap-3">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button type="button" className="rounded-full outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-brand/40">
@@ -129,8 +127,8 @@ const Navbar = () => {
             </DropdownMenu>
           </div>
         ) : (
-          <div className="hidden items-center gap-2 md:flex">
-            <Link to="/signup-organizer" className="px-3 py-2 text-sm font-semibold text-slate-600 hover:text-ink">
+          <div className="flex items-center gap-2">
+            <Link to="/signup-organizer" className="px-3 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground">
               Host an event
             </Link>
             <Link to="/login" className="ghost-btn h-10 px-4">
@@ -141,20 +139,24 @@ const Navbar = () => {
             </Link>
           </div>
         )}
+        </div>
 
-        <button
-          type="button"
-          className="rounded-xl p-2 text-ink md:hidden"
-          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-          onClick={() => setMenuOpen((open) => !open)}
-        >
-          {menuOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
+        <div className="flex items-center gap-1 md:hidden">
+          <ThemeToggle />
+          <button
+            type="button"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-foreground"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            {menuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </nav>
 
       {menuOpen && (
-        <div className="border-t border-[color:var(--border)] bg-white px-4 py-4 md:hidden">
-          <div className="flex flex-col gap-3 text-sm font-semibold text-slate-700">
+        <div className="border-t border-border bg-background px-4 py-4 md:hidden">
+          <div className="flex flex-col gap-3 text-sm font-semibold text-foreground">
             <Link to="/" onClick={closeMenu}>Home</Link>
             <Link to="/get-all-events" onClick={closeMenu}>Events</Link>
             <Link to="/book-events" onClick={closeMenu}>Book</Link>

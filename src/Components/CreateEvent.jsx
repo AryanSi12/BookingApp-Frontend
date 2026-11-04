@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { getAllVenues } from "@/services/venues";
 import { toast } from "sonner";
 import { Skeleton } from "@/Components/ui/skeleton";
-import { EmptyState, PageHeader, PageShell, Surface } from "@/Components/ui/PageShell";
+import { EmptyState, PageHeader, PageShell, Stepper, Surface } from "@/Components/ui/PageShell";
 
 const CreateEvent = () => {
   const [venues, setVenues] = useState([]);
@@ -13,9 +13,7 @@ const CreateEvent = () => {
   useEffect(() => {
     const fetchVenues = async () => {
       try {
-        const response = await axios.get("https://bookingapp-backend-hsy3.onrender.com/User/getAllVenues", {
-          withCredentials: true,
-        });
+        const response = await getAllVenues();
         setVenues(response.data || []);
       } catch (error) {
         console.error(error);
@@ -35,6 +33,7 @@ const CreateEvent = () => {
         title="Choose a venue"
         subtitle="Pick a hall layout, then finish the event details."
       />
+      <Stepper steps={["Venue", "Details"]} current={0} />
 
       {loading ? (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
