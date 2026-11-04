@@ -139,7 +139,7 @@ const EventAnalytics = () => {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="revenue" fill="#e11d48" name="Revenue (₹)" />
+              <Bar dataKey="revenue" fill="hsl(var(--primary))" name="Revenue (₹)" />
             </BarChart>
           </ResponsiveContainer>
         </div>

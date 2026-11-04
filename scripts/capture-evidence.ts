@@ -10,6 +10,8 @@ import path from "node:path";
 const phase = process.argv[2] || "before";
 const base = process.env.BASE_URL || "http://127.0.0.1:5173";
 const root = path.resolve("artifacts");
+const theme = process.env.EVIDENCE_THEME === "dark" ? "dark" : "light";
+const themeSuffix = theme === "dark" ? "-dark" : "";
 
 const PLACEHOLDER_ID = "507f1f77bcf86cd799439011";
 
@@ -60,7 +62,21 @@ async function shoot(browser: Browser, outDir: string) {
     const context = await browser.newContext({
       viewport: { width: viewport.width, height: viewport.height },
       deviceScaleFactor: 1,
+      colorScheme: theme,
     });
+    await context.addInitScript((mode) => {
+      const apply = () => {
+        try {
+          localStorage.setItem("theme", mode);
+        } catch {
+          /* ignore */
+        }
+        const root = document.documentElement;
+        if (root) root.classList.toggle("dark", mode === "dark");
+      };
+      apply();
+      document.addEventListener("DOMContentLoaded", apply);
+    }, theme);
     const page = await context.newPage();
     page.on("console", (msg) => {
       if (msg.type() === "error" || msg.type() === "warning") {
@@ -85,7 +101,7 @@ async function shoot(browser: Browser, outDir: string) {
       const target = new URL(entry.path, base).toString();
       await page.goto(target, { waitUntil: "domcontentloaded", timeout: 20000 });
       await settle(page);
-      const file = `${entry.name}-${viewport.name}.png`;
+      const file = `${entry.name}-${viewport.name}${themeSuffix}.png`;
       await page.screenshot({ path: path.join(outDir, file), fullPage: true });
       manifest.push({
         name: entry.name,
@@ -136,6 +152,22 @@ async function recordFlows(browser: Browser) {
         await page.waitForTimeout(600);
         await page.getByRole("link", { name: "Host events" }).click();
         await page.waitForTimeout(900);
+      },
+    },
+    {
+      name: "theme-toggle",
+      run: async (page) => {
+        await page.goto(base + "/", { waitUntil: "domcontentloaded" });
+        await page.getByRole("heading", { name: "Book the show." }).waitFor();
+        await page.waitForTimeout(600);
+        const toggle = page.getByRole("button", { name: /Switch theme/ }).first();
+        await toggle.click();
+        await page.waitForTimeout(400);
+        await toggle.click();
+        await page.waitForTimeout(1000);
+        await page.locator('nav a[href="/get-all-events"]').click();
+        await page.getByRole("heading", { name: "All events" }).waitFor();
+        await page.waitForTimeout(1000);
       },
     },
     {

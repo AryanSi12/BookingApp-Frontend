@@ -35,7 +35,7 @@ const Hero = () => {
   return (
     <div className="pb-20 pt-16">
       <section className="relative overflow-hidden border-b border-[color:var(--border)]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(225,29,72,0.12),transparent_35%),radial-gradient(circle_at_85%_10%,rgba(17,24,39,0.06),transparent_30%),linear-gradient(135deg,#fffdfb,#f8f4ef_55%,#fff1f3)]" />
+        <div className="hero-wash absolute inset-0" />
         <div className="page-shell relative grid gap-10 py-12 md:grid-cols-[1.15fr_0.85fr] md:items-center md:py-16">
           <div className="fade-up max-w-xl">
             <p className="section-kicker">EventSphere</p>
@@ -71,7 +71,7 @@ const Hero = () => {
                 { label: "Seat map", value: "Live" },
                 { label: "Checkout", value: "Secure" },
               ].map((item) => (
-                <div key={item.label} className="rounded-xl bg-[#faf7f3] px-3 py-4 text-center">
+                <div key={item.label} className="rounded-xl bg-muted px-3 py-4 text-center">
                   <p className="font-display text-lg font-bold text-ink">{item.value}</p>
                   <p className="mt-1 text-[11px] font-medium uppercase tracking-wide text-slate-500">{item.label}</p>
                 </div>
@@ -95,7 +95,7 @@ const Hero = () => {
         {loading ? (
           <div className="no-scrollbar flex gap-4 overflow-hidden">
             {Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="h-[22rem] w-44 shrink-0 animate-pulse rounded-2xl bg-white/70" />
+              <div key={index} className="h-[22rem] w-44 shrink-0 animate-pulse rounded-2xl bg-muted" />
             ))}
           </div>
         ) : events.length === 0 ? (

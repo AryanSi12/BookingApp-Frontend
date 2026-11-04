@@ -17,14 +17,14 @@ const elementStyle = {
   style: {
     base: {
       fontSize: "16px",
-      color: "#111827",
+      color: "hsl(222 47% 11%)",
       fontFamily: "DM Sans, Arial, sans-serif",
       "::placeholder": {
         color: "#94a3b8"
       }
     },
     invalid: {
-      color: "#e11d48"
+      color: "hsl(243 75% 59%)"
     }
   }
 };

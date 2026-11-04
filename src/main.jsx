@@ -1,8 +1,16 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ThemeProvider } from 'next-themes'
 import './index.css'
 import '@/lib/api'
 import App from './App.jsx'
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { staleTime: 30_000, retry: 1 },
+  },
+})
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Hero from './Components/Hero.jsx'
 import { Provider } from 'react-redux'
@@ -124,10 +132,14 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')).render(
  <StrictMode>
+  <ThemeProvider attribute="class" defaultTheme="system" enableSystem storageKey="theme">
+  <QueryClientProvider client={queryClient}>
   <Provider store={store}>
   <PersistGate loading={null} persistor={persistor}>
     <RouterProvider router={router}/>
-  </PersistGate>
+   </PersistGate>
   </Provider>
+  </QueryClientProvider>
+  </ThemeProvider>
   </StrictMode>,
 )

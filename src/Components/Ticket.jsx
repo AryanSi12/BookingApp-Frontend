@@ -43,7 +43,7 @@ const Ticket = () => {
     <PageShell>
       <div className="mx-auto max-w-md fade-up">
         <article className="overflow-hidden rounded-[1.5rem] border border-[color:var(--border)] bg-white shadow-[0_20px_50px_rgba(17,24,39,0.08)]">
-          <header className="relative overflow-hidden bg-gradient-to-br from-[#e11d48] to-[#9f1239] px-6 py-6 text-white">
+          <header className="relative overflow-hidden bg-brand-gradient px-6 py-6 text-white">
             <div className="absolute -right-8 -top-10 h-28 w-28 rounded-full bg-white/10" />
             <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/80">EventSphere ticket</p>
             <h1 className="mt-2 font-display text-2xl font-bold leading-tight">{eventId?.title || "Your ticket"}</h1>

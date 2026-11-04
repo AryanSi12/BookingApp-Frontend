@@ -57,7 +57,7 @@ const Login = () => {
   return (
     <PageShell>
       <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-[0.95fr_1.05fr] md:items-center">
-        <Surface className="fade-up hidden overflow-hidden bg-gradient-to-br from-[#fff7f8] via-white to-[#f3efe9] p-8 md:block">
+        <Surface className="fade-up hidden overflow-hidden bg-gradient-to-br from-primary-50 via-card to-accent-50 p-8 md:block dark:from-primary-950 dark:via-card dark:to-accent-950">
           <p className="section-kicker">Welcome back</p>
           <h1 className="mt-3 font-display text-4xl font-extrabold text-ink">
             Your next seat is one login away.
