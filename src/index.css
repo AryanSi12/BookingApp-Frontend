@@ -260,6 +260,19 @@
   scrollbar-width: none;
 }
 
+/* Stripe iframes miss clicks while any ancestor keeps a transform. */
+.motion-settled {
+  transform: none !important;
+}
+
+.stripe-field {
+  min-height: 1.5rem;
+}
+
+.stripe-field iframe {
+  min-height: 1.5rem;
+}
+
 @media print {
   header,
   footer,

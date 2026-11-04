@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { bookSeat } from "@/services/bookings";
 import { getEventById, getSeatStatusByEventId } from "@/services/events";
 import {
@@ -9,29 +9,38 @@ import {
   CardCvcElement
 } from "@stripe/react-stripe-js";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
+import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { PageShell, Stepper, Surface } from "@/Components/ui/PageShell";
 import { formatEventWhen, seatPrice } from "@/lib/utils";
 
-const elementStyle = {
-  style: {
-    base: {
-      fontSize: "16px",
-      color: "hsl(222 47% 11%)",
-      fontFamily: "DM Sans, Arial, sans-serif",
-      "::placeholder": {
-        color: "#94a3b8"
-      }
+function cardElementStyle(dark) {
+  return {
+    style: {
+      base: {
+        fontSize: "16px",
+        lineHeight: "24px",
+        color: dark ? "#f8fafc" : "#0f172a",
+        fontFamily: "Inter, Arial, sans-serif",
+        "::placeholder": {
+          color: dark ? "#94a3b8" : "#64748b",
+        },
+      },
+      invalid: {
+        color: "#e11d48",
+      },
     },
-    invalid: {
-      color: "hsl(243 75% 59%)"
-    }
-  }
-};
+  };
+}
 
 const Booking = () => {
   const stripe = useStripe();
   const elements = useElements();
+  const { resolvedTheme } = useTheme();
+  const elementStyle = useMemo(
+    () => cardElementStyle(resolvedTheme === "dark"),
+    [resolvedTheme]
+  );
   const [loading, setLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -179,27 +188,27 @@ const Booking = () => {
           </div>
         </aside>
 
-        <section className="surface-card fade-up-delay p-6 md:p-8">
+        <section className="surface-card p-6 md:p-8">
           <h2 className="font-display text-xl font-bold text-ink">Pay with card</h2>
           <p className="mt-1 text-sm text-slate-500">Your seats stay reserved until this payment finishes.</p>
 
           <div className="mt-6 space-y-4">
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700">Card number</label>
-              <div className="rounded-xl border border-border bg-card p-3.5">
+              <div className="stripe-field rounded-xl border border-border bg-background p-3.5">
                 <CardNumberElement options={elementStyle} />
               </div>
             </div>
             <div className="flex gap-4">
               <div className="w-1/2">
                 <label className="mb-2 block text-sm font-semibold text-slate-700">Expiry</label>
-                <div className="rounded-xl border border-border bg-card p-3.5">
+                <div className="stripe-field rounded-xl border border-border bg-background p-3.5">
                   <CardExpiryElement options={elementStyle} />
                 </div>
               </div>
               <div className="w-1/2">
                 <label className="mb-2 block text-sm font-semibold text-slate-700">CVC</label>
-                <div className="rounded-xl border border-border bg-card p-3.5">
+                <div className="stripe-field rounded-xl border border-border bg-background p-3.5">
                   <CardCvcElement options={elementStyle} />
                 </div>
               </div>
