@@ -7,7 +7,7 @@ import { useDispatch } from "react-redux";
 import { setUserDetails } from "../Redux/userSlice";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { PageShell, Surface } from "@/Components/ui/PageShell";
+import { AuthFrame } from "@/Components/ui/PageShell";
 import { clearAuthToken } from "@/services/api";
 import { addUser, completeLogin, loginUser } from "@/services/auth";
 
@@ -78,12 +78,13 @@ const SignupAsUser = () => {
   };
 
   return (
-    <PageShell>
-      <div className="mx-auto max-w-lg fade-up">
-        <Surface className="p-6 md:p-8">
-          <p className="section-kicker">Attendee</p>
-          <h2 className="mt-2 font-display text-3xl font-bold text-ink">Create your account</h2>
-          <p className="mt-1 text-sm text-slate-500">Book seats and keep tickets in one place.</p>
+    <AuthFrame
+      kicker="Attendee"
+      title="A seat with your name on it."
+      lede="Create an account to book seats and keep every ticket in one place."
+    >
+          <h2 className="font-display text-3xl font-bold text-ink">Create your account</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Book seats and keep tickets in one place.</p>
           <form onSubmit={handleSubmit} className="mt-6 space-y-5">
             <div>
               <Label htmlFor="username" className="mb-1.5 text-slate-700">Username</Label>
@@ -150,9 +151,7 @@ const SignupAsUser = () => {
               </Link>
             </p>
           </form>
-        </Surface>
-      </div>
-    </PageShell>
+    </AuthFrame>
   );
 };
 

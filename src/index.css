@@ -259,3 +259,18 @@
 .no-scrollbar {
   scrollbar-width: none;
 }
+
+@media print {
+  header,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+  }
+  .ticket-sheet {
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+}

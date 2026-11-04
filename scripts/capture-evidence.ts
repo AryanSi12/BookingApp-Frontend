@@ -36,6 +36,8 @@ const pages: { name: string; path: string }[] = [
   { name: "ticket", path: `/ticket/${PLACEHOLDER_ID}` },
   { name: "event-analytics", path: `/event-analytics/${PLACEHOLDER_ID}` },
   { name: "create-event-final", path: `/create-event-final/${PLACEHOLDER_ID}` },
+  { name: "styleguide", path: "/_styleguide" },
+  { name: "not-found", path: "/this-page-does-not-exist" },
 ];
 
 const viewports = [
@@ -51,7 +53,7 @@ function ensureDir(dir: string) {
 
 async function settle(page: Page) {
   await page.waitForLoadState("domcontentloaded");
-  await page.waitForTimeout(1600);
+  await page.waitForTimeout(2200);
 }
 
 async function shoot(browser: Browser, outDir: string) {
@@ -168,6 +170,18 @@ async function recordFlows(browser: Browser) {
         await page.locator('nav a[href="/get-all-events"]').click();
         await page.getByRole("heading", { name: "All events" }).waitFor();
         await page.waitForTimeout(1000);
+      },
+    },
+    {
+      name: "search-events",
+      run: async (page) => {
+        await page.goto(base + "/", { waitUntil: "domcontentloaded" });
+        await page.getByRole("heading", { name: "Book the show." }).waitFor();
+        await page.getByRole("link", { name: "Comedy" }).click();
+        await page.getByRole("heading", { name: "All events" }).waitFor();
+        await page.waitForTimeout(800);
+        await page.getByLabel("Search events").fill("jazz");
+        await page.waitForTimeout(1200);
       },
     },
     {

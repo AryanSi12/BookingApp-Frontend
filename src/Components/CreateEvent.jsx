@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getAllVenues } from "@/services/venues";
 import { toast } from "sonner";
 import { Skeleton } from "@/Components/ui/skeleton";
-import { EmptyState, PageHeader, PageShell, Surface } from "@/Components/ui/PageShell";
+import { EmptyState, PageHeader, PageShell, Stepper, Surface } from "@/Components/ui/PageShell";
 
 const CreateEvent = () => {
   const [venues, setVenues] = useState([]);
@@ -33,6 +33,7 @@ const CreateEvent = () => {
         title="Choose a venue"
         subtitle="Pick a hall layout, then finish the event details."
       />
+      <Stepper steps={["Venue", "Details"]} current={0} />
 
       {loading ? (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">

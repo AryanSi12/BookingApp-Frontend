@@ -10,7 +10,7 @@ import {
 } from "@stripe/react-stripe-js";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { PageShell, Surface } from "@/Components/ui/PageShell";
+import { PageShell, Stepper, Surface } from "@/Components/ui/PageShell";
 import { formatEventWhen, seatPrice } from "@/lib/utils";
 
 const elementStyle = {
@@ -139,11 +139,14 @@ const Booking = () => {
       <div className="mb-8 fade-up">
         <p className="section-kicker">Checkout</p>
         <h1 className="mt-2 font-display text-3xl font-bold text-ink">Confirm and pay</h1>
+        <div className="mt-5">
+          <Stepper steps={["Seats", "Pay", "Ticket"]} current={1} />
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <aside className="surface-card fade-up h-fit overflow-hidden">
-          <div className="border-b border-[color:var(--border)] bg-[#faf7f3] px-5 py-4">
+          <div className="border-b border-border bg-muted px-5 py-4">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Order summary</p>
           </div>
           <div className="p-5">
@@ -183,20 +186,20 @@ const Booking = () => {
           <div className="mt-6 space-y-4">
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700">Card number</label>
-              <div className="rounded-xl border border-[color:var(--border)] bg-white p-3.5">
+              <div className="rounded-xl border border-border bg-card p-3.5">
                 <CardNumberElement options={elementStyle} />
               </div>
             </div>
             <div className="flex gap-4">
               <div className="w-1/2">
                 <label className="mb-2 block text-sm font-semibold text-slate-700">Expiry</label>
-                <div className="rounded-xl border border-[color:var(--border)] bg-white p-3.5">
+                <div className="rounded-xl border border-border bg-card p-3.5">
                   <CardExpiryElement options={elementStyle} />
                 </div>
               </div>
               <div className="w-1/2">
                 <label className="mb-2 block text-sm font-semibold text-slate-700">CVC</label>
-                <div className="rounded-xl border border-[color:var(--border)] bg-white p-3.5">
+                <div className="rounded-xl border border-border bg-card p-3.5">
                   <CardCvcElement options={elementStyle} />
                 </div>
               </div>

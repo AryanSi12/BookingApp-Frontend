@@ -1,16 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { deleteEventById, getAllEventsByUserId } from "@/services/events";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/Components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/Components/ui/avatar";
-import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
-import { ScrollArea } from "@/Components/ui/scroll-area";
 import { Skeleton } from "@/Components/ui/skeleton";
 import {
   AlertDialog,
@@ -23,36 +13,41 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/Components/ui/alert-dialog";
-import { CalendarDays, Clock, Trash2 } from "lucide-react";
-import { format } from "date-fns";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { EmptyState, ErrorState, PageHeader, PageShell, Surface } from "@/Components/ui/PageShell";
+import { formatEventWhen } from "@/lib/utils";
 
 const MyEvents = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await getAllEventsByUserId();
-        setEvents(response.data);
-      } catch (err) {
-        console.error("Error fetching events:", err);
-        toast.error("Failed to load events");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchEvents = async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const response = await getAllEventsByUserId();
+      setEvents(Array.isArray(response.data) ? response.data : []);
+    } catch (err) {
+      console.error("Error fetching events:", err);
+      setError(true);
+      toast.error("Failed to load events");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchEvents();
   }, []);
 
   const handleDelete = async (eventId) => {
     try {
       await deleteEventById(eventId);
-      setEvents((prev) => prev.filter((e) => e.eventId !== eventId));
+      setEvents((prev) => prev.filter((event) => event.eventId !== eventId));
       toast.success("Event deleted successfully.");
     } catch (err) {
       console.error("Delete failed:", err);
@@ -60,89 +55,57 @@ const MyEvents = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6 mt-24">
-        {[...Array(6)].map((_, i) => (
-          <Skeleton key={i} className="h-52 w-full rounded-xl" />
-        ))}
-      </div>
-    );
-  }
-
   return (
-    <ScrollArea className="h-full w-full p-6 mt-24">
-      <h2 className="text-3xl font-bold text-center mb-8">My Events</h2>
-
-      {events.length === 0 ? (
-        <p className="text-center text-muted-foreground">No events found.</p>
+    <PageShell>
+      <PageHeader
+        kicker="Organizer"
+        title="My events"
+        subtitle="Shows you published. Analytics and delete stay on the same actions as before."
+      />
+      {loading ? (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, index) => (
+            <Skeleton key={index} className="h-64 w-full rounded-2xl" />
+          ))}
+        </div>
+      ) : error ? (
+        <ErrorState title="Events could not be loaded" description="Try the organizer list again." onRetry={fetchEvents} />
+      ) : events.length === 0 ? (
+        <EmptyState title="No events found" description="Create an event after you pick a venue." />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {events.map((event) => (
-            <Card
-              key={event.eventId}
-              className="overflow-hidden relative shadow-sm border h-[480px] flex flex-col justify-between"
-            >
-              <img
-                src={event.eventImage}
-                alt={event.title}
-                className="w-full h-48 object-cover"
-              />
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg flex items-center justify-between">
-                  {event.title}
-                  <Badge variant="outline">{event.venueId.venueName}</Badge>
-                </CardTitle>
-                <CardDescription className="text-sm line-clamp-2">
-                  {event.aboutEvent}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <CalendarDays className="h-4 w-4" />
-                  {format(new Date(event.startTime), "dd MMM yyyy")} -{" "}
-                  {format(new Date(event.endTime), "dd MMM yyyy")}
+            <Surface key={event.eventId} className="flex flex-col overflow-hidden">
+              {event.eventImage ? (
+                <img src={event.eventImage} alt="" className="h-44 w-full object-cover" />
+              ) : (
+                <div className="flex h-44 items-center justify-center bg-muted text-sm text-muted-foreground">{event.title}</div>
+              )}
+              <div className="flex flex-1 flex-col gap-3 p-4">
+                <div>
+                  <h2 className="font-display text-lg font-bold text-ink">{event.title}</h2>
+                  <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{event.aboutEvent}</p>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Clock className="h-4 w-4" />
-                  {format(new Date(event.startTime), "hh:mm a")} -{" "}
-                  {format(new Date(event.endTime), "hh:mm a")}
-                </div>
-                <div className="flex items-center gap-3 mt-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={event.organizerId.userImage} />
-                    <AvatarFallback>
-                      {event.organizerId.username.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="text-xs">
-                    <p className="font-semibold">
-                      {event.organizerId.username}
-                    </p>
-                    <p className="text-muted-foreground">
-                      {event.organizerId.email}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-2 mt-3">
+                <p className="text-xs text-muted-foreground">
+                  {event.venueId?.venueName || "Venue TBA"}
+                  {" · "}
+                  {formatEventWhen(event.startTime)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {event.organizerId?.username} {event.organizerId?.email ? `· ${event.organizerId.email}` : ""}
+                </p>
+                <div className="mt-auto flex gap-2">
                   <Button
                     variant="outline"
                     onClick={() => navigate(`/event-analytics/${event.eventId}`)}
                     size="sm"
-                    className="flex-1 cursor-pointer"
+                    className="h-11 flex-1"
                   >
-                    View Details
+                    Analytics
                   </Button>
-
-                  {/* AlertDialog for Delete Confirmation */}
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        className="cursor-pointer"
-                        title="Delete Event"
-                      >
+                      <Button variant="destructive" size="icon" className="h-11 w-11" title="Delete Event">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </AlertDialogTrigger>
@@ -162,12 +125,12 @@ const MyEvents = () => {
                     </AlertDialogContent>
                   </AlertDialog>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </Surface>
           ))}
         </div>
       )}
-    </ScrollArea>
+    </PageShell>
   );
 };
 

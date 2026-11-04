@@ -67,6 +67,7 @@ Multipart signup and create calls go through `postMultipart` in `src/services/up
 | `fetchBookingByUserId` | `GET /User/fetchBookingByUserId` | none | `MyBookings` | Array. Cards use event title, image, times, seats |
 | `fetchBookingByBookingId` | `GET /User/fetchBookingByBookingId/:bookingId` | none | `Ticket` | `bookingId`, `bookedSeats`, `amountPaid`, `eventId` (nested venue), `userId`. Failure navigates home |
 | `bookSeat` | `POST /User/bookSeat/:eventId` | `{ bookedSeats }` | `Booking` | `clientSecret`, `bookingDetails.bookingId`. Stripe `confirmCardPayment` stays in the component |
+| `fetchAllBookingsByEventId` | `GET /Organizer/fetchAllBookingsByEventId/:eventId` | none | `EventAnalytics` | Array of bookings, rendered defensively (`userId.username` or `username`, `bookedSeats`, `amountPaid`). CSV is built from that loaded list |
 
 ## Left in the UI on purpose
 
@@ -82,8 +83,7 @@ Multipart signup and create calls go through `postMultipart` in `src/services/up
 These exist on the API and were not wrapped, because no component called them:
 
 - `GET /Public/health`
-- `GET /User/getEventsByQuery`
-- `GET /Organizer/fetchAllBookingsByEventId/:eventId`
+- `GET /User/getEventsByQuery` (listing filters run on `getAllEvents` in the browser; this query shape is unknown)
 
 ## Routes
 
@@ -106,14 +106,16 @@ Defined in `src/main.jsx`. `App` renders `Navbar` and an `Outlet`. Guards are in
 | `/venue-by-id/:venueId` | `Venue` | Anyone (API requires a session) | `getVenueById` |
 | `/booking/:eventId` | `StripeProvider` + `Booking` | Needs `location.state.bookedSeats` | event, seats, `bookSeat` |
 | `/ticket/:bookingId` | `Ticket` | Anyone (API requires a session) | `fetchBookingByBookingId` |
-| `/Organizer` | `Organizer` | Logged-in organizer, else redirect `/` | Redux only |
+| `/Organizer` | `Organizer` | Logged-in organizer, else redirect `/` | Organizer events, venues, and seat status for a short occupancy chart |
 | `/explore` | `User` | Logged-in user, else redirect `/` | Redux only |
 | `/my-events` | `MyEvents` | Anyone (API requires organizer) | list + delete |
-| `/event-analytics/:eventId` | `EventAnalytics` | Anyone (API requires a session) | event + seats |
+| `/event-analytics/:eventId` | `EventAnalytics` | Anyone (API requires a session) | event, seats, and bookings for that event |
+| `/_styleguide` | `Styleguide` | Anyone | None |
+| `*` | `NotFound` | Anyone | None |
 | `/my-venues` | `MyVenues` | Anyone (API requires organizer) | list + delete |
 
 `/User/**` and `/Organizer/**` return 403 without a bearer token. Logged-out catalog pages show their existing empty or error state. That is unchanged.
 
 ## Components that do not call the network
 
-`App`, `BookAnEvent`, `GetAllEvents`, `EventPosterCard`, `Organizer`, `SeatMap`, `StripeProvider`, `User`, and everything under `src/Components/ui/`.
+`App`, `BookAnEvent`, `GetAllEvents`, `EventPosterCard`, `SeatMap`, `StripeProvider`, `Footer`, `NotFound`, `Styleguide`, and everything under `src/Components/ui/`. `Organizer` now calls the organizer event, venue, and seat-status endpoints.

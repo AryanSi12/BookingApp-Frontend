@@ -6,7 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { setUserDetails } from "../Redux/userSlice";
 import { toast } from "sonner";
 import { useDispatch } from "react-redux";
-import { PageShell, Surface } from "@/Components/ui/PageShell";
+import { AuthFrame } from "@/Components/ui/PageShell";
 import { clearAuthToken } from "@/services/api";
 import { addOrganizer, completeLogin, loginUser } from "@/services/auth";
 
@@ -77,12 +77,13 @@ const SignupAsOrganizer = () => {
   };
 
   return (
-    <PageShell>
-      <div className="mx-auto max-w-lg fade-up">
-        <Surface className="p-6 md:p-8">
-          <p className="section-kicker">Organizer</p>
-          <h2 className="mt-2 font-display text-3xl font-bold text-ink">Host with EventSphere</h2>
-          <p className="mt-1 text-sm text-slate-500">Create venues, publish shows, and sell seats.</p>
+    <AuthFrame
+      kicker="Organizer"
+      title="Open the hall."
+      lede="Host with EventSphere. Create venues, publish shows, and sell seats."
+    >
+          <h2 className="font-display text-3xl font-bold text-ink">Host with EventSphere</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Create venues, publish shows, and sell seats.</p>
           <form onSubmit={handleSubmit} className="mt-6 space-y-5">
             <div>
               <Label htmlFor="username" className="mb-1.5 text-slate-700">Username</Label>
@@ -149,9 +150,7 @@ const SignupAsOrganizer = () => {
               </Link>
             </p>
           </form>
-        </Surface>
-      </div>
-    </PageShell>
+    </AuthFrame>
   );
 };
 

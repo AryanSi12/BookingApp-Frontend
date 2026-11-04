@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import Navbar from "./Components/Navbar";
+import Footer from "./Components/Footer";
 import PageTransition from "./Components/PageTransition";
+import ErrorBoundary from "./Components/ErrorBoundary";
 import { Toaster } from "@/Components/ui/sonner";
 
 function AppToaster() {
@@ -30,8 +32,11 @@ function App() {
         </a>
         <Navbar />
         <div id="content">
-          <PageTransition />
+          <ErrorBoundary>
+            <PageTransition />
+          </ErrorBoundary>
         </div>
+        <Footer />
       </div>
     </>
   );

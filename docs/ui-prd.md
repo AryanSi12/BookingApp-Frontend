@@ -539,25 +539,19 @@ src/
 
 ---
 
-## 15. Phased Implementation Plan (follow in order)
-Each phase ends with: the app builds, existing flows work, and there is a commit like `feat(ui): phase N - ...`.
+## 15. Implementation plan
 
-1. **Audit & safety net**: produce `docs/api-inventory.md`, move API calls into `services/` without changing them, and confirm every page still works.
-2. **Foundation**: install the deps (§3), set up the Tailwind config and CSS vars (§4), fonts, shadcn init, `cn`, `motion.js`, ThemeToggle, sonner `<Toaster/>`, and the router with `AnimatePresence`.
-3. **Core components**: Button, Input, Card, Badge, Skeletons, EmptyState, ErrorState, Navbar, Footer, layouts. Add a hidden `/_styleguide` route that shows them all.
-4. **Auth pages** (§8) plus role-based redirects and guards.
-5. **Landing + listing** (§6.1–6.3): SearchBar, FilterPanel, EventCard, URL-synced filters.
-6. **Event detail** (§6.4).
-7. **Seat selection** (§6.5): the SeatMap with every state, legend, zoom, keyboard support, and the summary.
-8. **Checkout, confirmation, my bookings** (§6.6–6.8): Ticket, QR, confetti, .ics.
-9. **Organizer shell + dashboard** (§7.1) with recharts.
-10. **Event wizard** (§7.2) with ImageUploader.
-11. **Venue + layout builder** (§7.3) with the adapter and preview.
-12. **Events table + attendees** (§7.4–7.5), CSV export.
-13. **States pass**: every screen gets loading, empty, and error states (§10), plus ErrorBoundary and 404.
-14. **Responsive pass** (§11) at all test widths.
-15. **A11y + performance pass** (§12–13): run Lighthouse and axe, then fix.
-16. **Polish**: consistent spacing audit, dark-mode audit of every screen, and motion review with reduced motion.
+The original sixteen phases are collapsed. Routes, request bodies, and response handling stay as they are in `docs/api-inventory.md`. Screen specs in §6–§12 still apply, adapted to the existing paths (`/get-all-events`, `/event/:eventId`, `/Organizer`, and the rest) rather than the suggested `/events` and `/organizer/*` names.
+
+1. **Audit** — done. `docs/api-inventory.md` and `src/services/*`.
+2. **Foundation** — done. Tokens, theme toggle, page transitions, toaster.
+3. **Product UI** — one pass covering shared chrome, public booking, auth layouts, and organizer screens:
+   - Footer, empty/error states, event cards, `/_styleguide`, 404, and an error boundary.
+   - Landing categories (keyword links), how-it-works, and organizer call to action. Listings filter by keyword, location, and sort, synced to the query string. `GET /User/getEventsByQuery` stays unused because its shape is unknown.
+   - Event detail, token seat map (legend, zoom, keyboard), checkout stepper around the existing Stripe call, ticket QR / calendar file / print, and upcoming/past bookings.
+   - Split auth layouts on the existing login and signup routes.
+   - Organizer dashboard aggregated from existing event and seat calls, guided create-event and create-venue steps that still submit the same `FormData`, and attendees from `GET /Organizer/fetchAllBookingsByEventId/:eventId` with CSV of the loaded rows.
+   - Loading, empty, and error states on the screens this pass touches, including a real failure state when an event cannot be loaded. Dark surfaces use the semantic tokens. Heavy organizer routes are lazy-loaded. Reduced motion already clamps page animation.
 
 ---
 
