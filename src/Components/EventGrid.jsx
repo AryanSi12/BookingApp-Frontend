@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import axios from "axios";
 import { Search } from "lucide-react";
+import { getAllEvents } from "@/services/events";
 import { Skeleton } from "@/Components/ui/skeleton";
 import { toast } from "sonner";
 import EventPosterCard from "@/Components/EventPosterCard";
@@ -15,9 +15,7 @@ const EventGrid = ({ title, subtitle, kicker = "Discover" }) => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await axios.get("https://bookingapp-backend-hsy3.onrender.com/User/getAllEvents", {
-          withCredentials: true,
-        });
+        const res = await getAllEvents();
         setEvents(Array.isArray(res.data) ? res.data : []);
       } catch {
         toast.error("Failed to fetch events.");

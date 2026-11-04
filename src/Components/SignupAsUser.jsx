@@ -3,13 +3,13 @@ import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
 import { Link } from "react-router-dom";
-import axios from "axios";
 import { useDispatch } from "react-redux";
 import { setUserDetails } from "../Redux/userSlice";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { PageShell, Surface } from "@/Components/ui/PageShell";
-import { API_BASE, clearAuthToken, completeLogin } from "@/lib/api";
+import { clearAuthToken } from "@/services/api";
+import { addUser, completeLogin, loginUser } from "@/services/auth";
 
 const SignupAsUser = () => {
   const [formData, setFormData] = useState({
@@ -48,20 +48,12 @@ const SignupAsUser = () => {
       form.append("user", userJson);
       form.append("image", formData.image);
 
-      await axios.post(`${API_BASE}/Public/AddUser`, form, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      await addUser(form);
 
-      const loginResponse = await axios.post(
-        `${API_BASE}/Public/LoginUser`,
-        {
-          username: formData.username,
-          password: formData.password
-        },
-        { withCredentials: true }
-      );
+      const loginResponse = await loginUser({
+        username: formData.username,
+        password: formData.password,
+      });
 
       const { token, userDetails } = await completeLogin(loginResponse.data);
       dispatch(setUserDetails({ userDetails, token }));

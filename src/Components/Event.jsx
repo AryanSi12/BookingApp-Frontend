@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { CalendarDays, MapPin } from "lucide-react";
+import { getEventById, getSeatStatusByEventId } from "@/services/events";
+import { getVenueById } from "@/services/venues";
 import { toast } from "sonner";
 import SeatMap from "@/Components/SeatMap";
 import { PageShell, Surface } from "@/Components/ui/PageShell";
@@ -20,9 +21,7 @@ const Event = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const eventRes = await axios.get(`https://bookingapp-backend-hsy3.onrender.com/User/getEventById/${eventId}`, {
-          withCredentials: true,
-        });
+        const eventRes = await getEventById(eventId);
         const eventData = eventRes.data;
         setEvent(eventData);
 
@@ -32,17 +31,13 @@ const Event = () => {
           : venueRef;
 
         if (venueId) {
-          const venueRes = await axios.get(`https://bookingapp-backend-hsy3.onrender.com/User/getVenueById/${venueId}`, {
-            withCredentials: true,
-          });
+          const venueRes = await getVenueById(venueId);
           setVenue(venueRes.data.venue || venueRes.data);
         } else if (venueRef && typeof venueRef === "object") {
           setVenue(venueRef);
         }
 
-        const seatRes = await axios.get(`https://bookingapp-backend-hsy3.onrender.com/User/getSeatStatusByEventId/${eventId}`, {
-          withCredentials: true,
-        });
+        const seatRes = await getSeatStatusByEventId(eventId);
         setSeatStatusList(Array.isArray(seatRes.data) ? seatRes.data : []);
       } catch (error) {
         toast.error("Error loading event data");

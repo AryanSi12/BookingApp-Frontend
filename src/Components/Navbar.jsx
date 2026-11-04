@@ -3,7 +3,6 @@ import { Menu, X } from 'lucide-react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { clearUserDetails, setUserDetails } from '../Redux/userSlice';
-import axios from 'axios';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -12,12 +11,8 @@ import {
   DropdownMenuSeparator,
 } from '@/Components/ui/dropdown-menu';
 import { Avatar, AvatarImage, AvatarFallback } from '@/Components/ui/avatar';
-import {
-  API_BASE,
-  clearAuthToken,
-  fetchCurrentUserDetails,
-  hydrateAuthToken,
-} from '@/lib/api';
+import { clearAuthToken, hydrateAuthToken } from '@/services/api';
+import { fetchCurrentUserDetails, getCurrUser, logoutUser } from '@/services/auth';
 
 const linkClass = ({ isActive }) =>
   `relative text-sm font-semibold transition ${
@@ -45,7 +40,7 @@ const Navbar = () => {
     const syncSession = async () => {
       hydrateAuthToken(token);
       try {
-        await axios.get(`${API_BASE}/User/getCurrUser`, { withCredentials: true });
+        await getCurrUser();
         const details = await fetchCurrentUserDetails();
         if (!cancelled && details) {
           dispatch(
@@ -72,7 +67,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${API_BASE}/User/Logout`, null, { withCredentials: true });
+      await logoutUser();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { deleteVenueById, getAllVenuesByUserId } from "@/services/venues";
 import {
   Card,
   CardContent,
@@ -35,10 +35,7 @@ const MyVenues = () => {
   useEffect(() => {
     const fetchVenues = async () => {
       try {
-        const response = await axios.get(
-          "https://bookingapp-backend-hsy3.onrender.com/Organizer/getAllVenuesByUserId",
-          { withCredentials: true }
-        );
+        const response = await getAllVenuesByUserId();
         setVenues(response.data);
       } catch (err) {
         console.error("Error fetching venues:", err);
@@ -53,10 +50,7 @@ const MyVenues = () => {
 
   const handleDelete = async (venueId) => {
     try {
-      await axios.delete(
-        `https://bookingapp-backend-hsy3.onrender.com/Organizer/deleteVenueById/${venueId}`,
-        { withCredentials: true }
-      );
+      await deleteVenueById(venueId);
       setVenues((prev) => prev.filter((v) => v.venueId !== venueId));
       toast.success("Venue deleted successfully.");
     } catch (err) {

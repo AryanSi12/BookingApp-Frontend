@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { getAllVenues } from "@/services/venues";
 import { toast } from "sonner";
 import { Skeleton } from "@/Components/ui/skeleton";
 import { EmptyState, PageHeader, PageShell, Surface } from "@/Components/ui/PageShell";
@@ -13,9 +13,7 @@ const CreateEvent = () => {
   useEffect(() => {
     const fetchVenues = async () => {
       try {
-        const response = await axios.get("https://bookingapp-backend-hsy3.onrender.com/User/getAllVenues", {
-          withCredentials: true,
-        });
+        const response = await getAllVenues();
         setVenues(response.data || []);
       } catch (error) {
         console.error(error);

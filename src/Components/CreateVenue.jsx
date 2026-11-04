@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { Input } from "@/Components/ui/input";
+import { createVenue } from "@/services/venues";
 import { Label } from "@/Components/ui/label";
 import { Textarea } from "@/Components/ui/textarea";
 import { toast } from "sonner";
@@ -55,16 +55,7 @@ const CreateVenue = () => {
       formData.append("venue", JSON.stringify(venueData));
       formData.append("image", image);
 
-      const response = await axios.post(
-        `https://bookingapp-backend-hsy3.onrender.com/Organizer/createVenue`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true,
-        }
-      );
+      const response = await createVenue(formData);
       
       toast.success("Venue created successfully!");
       console.log("Venue created:", response);

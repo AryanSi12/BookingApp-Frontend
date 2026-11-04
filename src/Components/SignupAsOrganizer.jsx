@@ -3,12 +3,12 @@ import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { setUserDetails } from "../Redux/userSlice";
 import { toast } from "sonner";
 import { useDispatch } from "react-redux";
 import { PageShell, Surface } from "@/Components/ui/PageShell";
-import { API_BASE, clearAuthToken, completeLogin } from "@/lib/api";
+import { clearAuthToken } from "@/services/api";
+import { addOrganizer, completeLogin, loginUser } from "@/services/auth";
 
 const SignupAsOrganizer = () => {
   const navigate = useNavigate();
@@ -47,20 +47,12 @@ const SignupAsOrganizer = () => {
       form.append("user", userJson);
       form.append("image", formData.image);
 
-      await axios.post(`${API_BASE}/Public/AddOrganizer`, form, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      await addOrganizer(form);
 
-      const loginResponse = await axios.post(
-        `${API_BASE}/Public/LoginUser`,
-        {
-          username: formData.username,
-          password: formData.password
-        },
-        { withCredentials: true }
-      );
+      const loginResponse = await loginUser({
+        username: formData.username,
+        password: formData.password,
+      });
 
       const { token, userDetails } = await completeLogin(loginResponse.data);
       dispatch(setUserDetails({ userDetails, token }));

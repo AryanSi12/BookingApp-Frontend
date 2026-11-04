@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, MapPin, PlusSquare, Ticket } from "lucide-react";
 import { Button } from "@/Components/ui/button";
 import { useSelector } from "react-redux";
-import axios from "axios";
 import { Link } from "react-router-dom";
+import { getAllEvents } from "@/services/events";
 import EventPosterCard from "@/Components/EventPosterCard";
 import { EmptyState, Surface } from "@/Components/ui/PageShell";
 
@@ -17,10 +17,7 @@ const Hero = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await axios.get(
-          "https://bookingapp-backend-hsy3.onrender.com/User/getAllEvents",
-          { withCredentials: true }
-        );
+        const response = await getAllEvents();
         setEvents(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error("Error fetching events:", error);

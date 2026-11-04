@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { fetchBookingByUserId } from "@/services/bookings";
 import { Skeleton } from "@/Components/ui/skeleton";
 import { toast } from "sonner";
 import { EmptyState, PageHeader, PageShell, Surface } from "@/Components/ui/PageShell";
@@ -14,9 +14,7 @@ const MyBookings = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const res = await axios.get("https://bookingapp-backend-hsy3.onrender.com/User/fetchBookingByUserId", {
-          withCredentials: true,
-        });
+        const res = await fetchBookingByUserId();
         setBookings(Array.isArray(res.data) ? res.data : []);
       } catch {
         toast.error("Failed to fetch your bookings.");

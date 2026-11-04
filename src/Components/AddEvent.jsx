@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { Input } from "@/Components/ui/input";
+import { createEvent } from "@/services/events";
 import { Button } from "@/Components/ui/button";
 import { Label } from "@/Components/ui/label";
 import { Card, CardContent } from "@/Components/ui/card";
@@ -63,16 +63,7 @@ const AddEvent = () => {
       formData.append("event", JSON.stringify(eventPayload));
       formData.append("image", eventImage);
 
-      const response = await axios.post(
-        `https://bookingapp-backend-hsy3.onrender.com/Organizer/createEvent/${venueId}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true,
-        }
-      );
+      const response = await createEvent(venueId, formData);
 
       toast.success("Event created successfully!");
       const eventId = response.data?._id || response.data?.eventId;

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { toast } from "sonner";
+import { fetchBookingByBookingId } from "@/services/bookings";
 import { PageShell } from "@/Components/ui/PageShell";
 import { formatEventWhen } from "@/lib/utils";
 
@@ -13,10 +13,7 @@ const Ticket = () => {
   useEffect(() => {
     const fetchTicket = async () => {
       try {
-        const res = await axios.get(
-          `https://bookingapp-backend-hsy3.onrender.com/User/fetchBookingByBookingId/${bookingId}`,
-          { withCredentials: true }
-        );
+        const res = await fetchBookingByBookingId(bookingId);
         setTicket(res.data);
       } catch {
         toast.error("Failed to fetch ticket details.");

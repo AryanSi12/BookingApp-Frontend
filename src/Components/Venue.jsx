@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { toast } from "sonner";
+import { getVenueById } from "@/services/venues";
 import SeatMap from "@/Components/SeatMap";
 import { PageShell, Surface } from "@/Components/ui/PageShell";
 
@@ -13,9 +13,7 @@ const Venue = () => {
   useEffect(() => {
     const fetchVenue = async () => {
       try {
-        const response = await axios.get(`https://bookingapp-backend-hsy3.onrender.com/User/getVenueById/${venueId}`, {
-          withCredentials: true,
-        });
+        const response = await getVenueById(venueId);
         setVenue(response.data.venue || response.data);
       } catch (error) {
         toast.error("Error fetching venue details");

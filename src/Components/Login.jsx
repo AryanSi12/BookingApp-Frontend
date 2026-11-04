@@ -3,11 +3,11 @@ import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import axios from "axios";
 import { setUserDetails } from "../Redux/userSlice";
 import { toast } from "sonner";
 import { PageShell, Surface } from "@/Components/ui/PageShell";
-import { API_BASE, clearAuthToken, completeLogin } from "@/lib/api";
+import { clearAuthToken } from "@/services/api";
+import { completeLogin, loginUser } from "@/services/auth";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -28,11 +28,7 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post(
-        `${API_BASE}/Public/LoginUser`,
-        credentials,
-        { withCredentials: true }
-      );
+      const response = await loginUser(credentials);
 
       const { token, userDetails } = await completeLogin(response.data);
       dispatch(setUserDetails({ userDetails, token }));

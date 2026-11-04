@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { getEventById, getSeatStatusByEventId } from "@/services/events";
 import { toast } from "sonner";
 import { PieChart, Pie, Cell, Tooltip, Legend, BarChart, XAxis, YAxis, CartesianGrid, Bar, ResponsiveContainer } from "recharts";
 
@@ -17,14 +17,10 @@ const EventAnalytics = () => {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const eventRes = await axios.get(`https://bookingapp-backend-hsy3.onrender.com/User/getEventById/${eventId}`, {
-          withCredentials: true,
-        });
+        const eventRes = await getEventById(eventId);
         setEvent(eventRes.data);
 
-        const seatRes = await axios.get(`https://bookingapp-backend-hsy3.onrender.com/User/getSeatStatusByEventId/${eventId}`, {
-          withCredentials: true,
-        });
+        const seatRes = await getSeatStatusByEventId(eventId);
         setSeatStatusList(seatRes.data);
       } catch (err) {
         toast.error("Failed to load event analytics.");

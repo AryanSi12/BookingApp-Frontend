@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { deleteEventById, getAllEventsByUserId } from "@/services/events";
 import {
   Card,
   CardContent,
@@ -36,10 +36,7 @@ const MyEvents = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await axios.get(
-          "https://bookingapp-backend-hsy3.onrender.com/Organizer/getAllEventsByUserId",
-          { withCredentials: true }
-        );
+        const response = await getAllEventsByUserId();
         setEvents(response.data);
       } catch (err) {
         console.error("Error fetching events:", err);
@@ -54,10 +51,7 @@ const MyEvents = () => {
 
   const handleDelete = async (eventId) => {
     try {
-      await axios.delete(
-        `https://bookingapp-backend-hsy3.onrender.com/Organizer/deleteEventById/${eventId}`,
-        { withCredentials: true }
-      );
+      await deleteEventById(eventId);
       setEvents((prev) => prev.filter((e) => e.eventId !== eventId));
       toast.success("Event deleted successfully.");
     } catch (err) {

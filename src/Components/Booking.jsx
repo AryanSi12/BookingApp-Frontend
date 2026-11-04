@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { bookSeat } from "@/services/bookings";
+import { getEventById, getSeatStatusByEventId } from "@/services/events";
 import {
   useStripe,
   useElements,
@@ -60,10 +61,7 @@ const Booking = () => {
 
     const loadSummary = async () => {
       try {
-        const eventRes = await axios.get(
-          `https://bookingapp-backend-hsy3.onrender.com/User/getEventById/${eventId}`,
-          { withCredentials: true }
-        );
+        const eventRes = await getEventById(eventId);
         const eventData = eventRes.data;
         const venueRef = eventData.venueId;
         let nextTotal = totalPrice;
@@ -71,10 +69,7 @@ const Booking = () => {
           if (selectedSeatDetails.length) {
             nextTotal = selectedSeatDetails.reduce((sum, seat) => sum + seatPrice(seat.seatType), 0);
           } else if (bookedSeats.length) {
-            const seatRes = await axios.get(
-              `https://bookingapp-backend-hsy3.onrender.com/User/getSeatStatusByEventId/${eventId}`,
-              { withCredentials: true }
-            );
+            const seatRes = await getSeatStatusByEventId(eventId);
             const byNumber = new Map((seatRes.data || []).map((seat) => [String(seat.seatNumber), seat]));
             nextTotal = bookedSeats.reduce((sum, number) => sum + seatPrice(byNumber.get(String(number))?.seatType), 0);
           }
@@ -100,11 +95,7 @@ const Booking = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post(
-        `https://bookingapp-backend-hsy3.onrender.com/User/bookSeat/${eventId}`,
-        { bookedSeats },
-        { withCredentials: true }
-      );
+      const res = await bookSeat(eventId, { bookedSeats });
 
       const { clientSecret, bookingDetails } = res.data;
       const result = await stripe.confirmCardPayment(clientSecret, {
